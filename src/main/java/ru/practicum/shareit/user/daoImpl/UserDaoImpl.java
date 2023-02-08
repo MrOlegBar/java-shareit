@@ -70,7 +70,7 @@ public class UserDaoImpl implements UserDao {
 
     private void checkForUniqueness(User user) throws ValidationException {
         users.forEach(savedUser -> {
-            if ((savedUser.getEmail().equals(user.getEmail())) && (savedUser != user)) {
+            if ((savedUser.getEmail().equals(user.getEmail())) && (!savedUser.equals(user))) {
                 log.debug("Пользователь с email: {} уже существует.", user.getEmail());
                 throw new ValidationException(String.format("Пользователь с email: %s уже существует.",
                         user.getEmail()));
