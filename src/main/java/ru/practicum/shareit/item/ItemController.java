@@ -66,7 +66,7 @@ public class ItemController {
         return itemMapper.toDto(itemForDto);
     }
 
-    @GetMapping( "/items/search")
+    @GetMapping("/items/search")
     public Collection<ItemDto> findFilmsBySearch(@RequestParam String text) {
         if (text.isEmpty()) {
             return new ArrayList<>();
