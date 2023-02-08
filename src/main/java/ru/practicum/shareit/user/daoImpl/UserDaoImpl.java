@@ -16,7 +16,7 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public User save(User user) {
-        checkForUniqueness(user.getEmail());
+        checkForUniqueness(user);
 
         user.setId(getId());
         users.add(user);
@@ -43,7 +43,7 @@ public class UserDaoImpl implements UserDao {
 
     @Override
     public User update(User user) throws UserNotFoundException {
-        checkForUniqueness(user.getEmail());
+        checkForUniqueness(user);
 
         return users.stream()
                 .filter(savedUser -> savedUser.getId().equals(user.getId()))
@@ -68,12 +68,12 @@ public class UserDaoImpl implements UserDao {
         return ++User.ids;
     }
 
-    private void checkForUniqueness(String email) throws ValidationException {
+    private void checkForUniqueness(User user) throws ValidationException {
         users.forEach(savedUser -> {
-            if (savedUser.getEmail().equals(email)) {
-                log.debug("Пользователь с email: {} уже существует.", email);
+            if ((savedUser.getEmail().equals(user.getEmail())) && (savedUser != user)) {
+                log.debug("Пользователь с email: {} уже существует.", user.getEmail());
                 throw new ValidationException(String.format("Пользователь с email: %s уже существует.",
-                        email));
+                        user.getEmail()));
             }
         });
     }
