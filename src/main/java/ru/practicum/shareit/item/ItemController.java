@@ -16,14 +16,12 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ItemController {
     private final ItemService itemService;
-    private final ItemMapper itemMapper;
     private final UserService userService;
 
     @Autowired
-    public ItemController(@Qualifier("ItemServiceImpl") ItemService itemService, ItemMapper itemMapper,
+    public ItemController(@Qualifier("ItemServiceImpl") ItemService itemService,
                           @Qualifier("UserServiceImpl") UserService userService) {
         this.itemService = itemService;
-        this.itemMapper = itemMapper;
         this.userService = userService;
     }
 
@@ -34,7 +32,7 @@ public class ItemController {
 
         item.setUserId(userId);
         Item itemForDto = itemService.create(item);
-        return itemMapper.toDto(itemForDto);
+        return ItemMapper.toDto(itemForDto);
     }
 
     @GetMapping(value = { "/items", "/items/{itemId}"})
@@ -45,11 +43,11 @@ public class ItemController {
 
         if (itemId == null) {
             return itemService.getAllItemsByUserId(userId).stream()
-                    .map(itemMapper::toDto)
+                    .map(ItemMapper::toDto)
                     .collect(Collectors.toSet());
         } else {
             Item itemForDto = itemService.getItemById(itemId);
-            return itemMapper.toDto(itemForDto);
+            return ItemMapper.toDto(itemForDto);
         }
     }
 
@@ -59,11 +57,11 @@ public class ItemController {
                            @Valid @RequestBody ItemDto itemDto) throws UserNotFoundException, ItemNotFoundException {
         userService.getUserById(userId);
 
-        Item itemFromDto = itemMapper.toItem(itemDto);
+        Item itemFromDto = ItemMapper.toItem(itemDto);
         itemFromDto.setId(itemId);
 
         Item itemForDto = itemService.update(userId, itemFromDto);
-        return itemMapper.toDto(itemForDto);
+        return ItemMapper.toDto(itemForDto);
     }
 
     @GetMapping("/items/search")
@@ -73,7 +71,7 @@ public class ItemController {
         }
 
         return itemService.findItemsBySearch(text).stream()
-                .map(itemMapper::toDto)
+                .map(ItemMapper::toDto)
                 .collect(Collectors.toList());
     }
 }

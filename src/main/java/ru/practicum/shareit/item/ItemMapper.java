@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ItemMapper {
-    public ItemDto toDto(Item item) {
+    public static ItemDto toDto(Item item) {
         return ItemDto.builder()
                 .id(item.getId())
                 .name(item.getName())
@@ -13,7 +13,7 @@ public class ItemMapper {
                 .build();
     }
 
-    public Item toItem(ItemDto itemDto) {
+    public static Item toItem(ItemDto itemDto) {
         return Item.builder()
                 .name(itemDto.getName())
                 .description(itemDto.getDescription())
