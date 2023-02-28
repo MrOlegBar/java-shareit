@@ -1,11 +1,9 @@
 package ru.practicum.shareit.user;
 
-import ru.practicum.shareit.ValidationException;
-
 import java.util.Collection;
 
 public interface UserService {
-    User create(User user) throws ValidationException;
+    User create(User user);
 
     Collection<User> getAllUsers();
 

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.shareit.item.ItemNotFoundException;
 import ru.practicum.shareit.user.UserNotFoundException;
 
+import java.sql.SQLException;
 import java.util.Objects;
 
 @RestControllerAdvice
@@ -26,15 +27,21 @@ public class ErrorHandler {
                 e.getHeaderName()));
     }
 
-    @ExceptionHandler(ValidationException.class)
+    /*@ExceptionHandler(ValidationException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleValidation(final RuntimeException e) {
         return new ErrorResponse(e.getMessage());
-    }
+    }*/
 
     @ExceptionHandler({UserNotFoundException.class, ItemNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFound(final RuntimeException e) {
         return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler(org.postgresql.util.PSQLException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleSQLError(final SQLException e) {
+        return new ErrorResponse(e.getMessage().split("Подробности: ")[1]);
     }
 }

@@ -1,24 +1,39 @@
 package ru.practicum.shareit.item;
 
 import lombok.*;
+import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.base.BaseModel;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.util.Set;
+import javax.persistence.*;
 
-@Data
-@Builder
-public class Item {
-    private Long id;
-    @NotBlank(message = "Название вещи отсутствует или представлено пустым символом.")
+@Entity
+@Table(name = "items")
+@Getter @Setter @ToString
+@NoArgsConstructor
+public class Item extends BaseModel<Long> {
+    @Column(name = "name")
     private String name;
-    @NotNull(message = "Описание вещи отсутствует.")
+    @Column(name = "description")
     private String description;
-    @NotNull(message = "Статус доступности вещи отсутствует.")
+    @Column(name = "available")
     private Boolean available;
-    private Long userId;
-    private Long request;
-    private Set<Long> reviewsId;
+    @Column(name = "user_id")
+    private User user;
 
-    public static Long ids = 0L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Override
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    @ManyToOne
+    @JoinColumn(name="user_id")
+    public User getUser() {
+        return user;
+    }
 }

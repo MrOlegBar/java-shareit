@@ -1,23 +1,40 @@
 package ru.practicum.shareit.user;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+import ru.practicum.shareit.item.Item;
+import ru.practicum.shareit.base.BaseModel;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotNull;
+import javax.persistence.*;
 import java.util.Set;
 
-@Data
-@Builder
-public class User {
-    private Long id;
+@Entity
+@Table(name = "users",
+        uniqueConstraints = @UniqueConstraint(name = "unique_email", columnNames = "email"))
+@NoArgsConstructor
+@Setter @Getter @ToString
+public class User extends BaseModel<Long> {
+    @Column(name = "name")
     private String name;
-    @NotNull(message = "Электронная почта отсутствует.")
-    @Email(message = "Email не соответствует формату электронной почты.")
+    @Column(name = "email")
     private String email;
+    private Set<Item> items;
 
-    private Set<Long> itemsId;
-    private Set<Long> reviewId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Override
+    public Long getId() {
+        return id;
+    }
 
-    public static Long ids = 0L;
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    @OneToMany(mappedBy = "user")
+    @Fetch(FetchMode.JOIN)
+    public Set<Item> getItems() {
+        return items;
+    }
 }

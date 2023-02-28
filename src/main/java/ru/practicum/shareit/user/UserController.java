@@ -1,9 +1,11 @@
 package ru.practicum.shareit.user;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.constraintGroup.Post;
+import ru.practicum.shareit.constraintGroup.Put;
 
-import javax.validation.Valid;
 import java.util.stream.Collectors;
 
 @RestController
@@ -12,8 +14,9 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/users")
-    public UserDto postUser(@Valid @RequestBody User user) {
-        User userForDto = userService.create(user);
+    public UserDto postUser(@Validated(Post.class) @RequestBody UserDto userDto) {
+        User userFromDto = UserMapper.toUser(userDto);
+        User userForDto = userService.create(userFromDto);
         return UserMapper.toDto(userForDto);
     }
 
@@ -31,11 +34,18 @@ public class UserController {
 
     @PatchMapping("/users/{userId}")
     public UserDto putUser(@PathVariable Long userId,
-                           @Valid @RequestBody UserDto userDto) throws UserNotFoundException {
-        User userFromDto = UserMapper.toUser(userDto);
-        userFromDto.setId(userId);
+                           @Validated(Put.class)
+                           @RequestBody UserDto userDto) throws UserNotFoundException {
+        User user = userService.getUserById(userId);
 
-        User userForDto = userService.update(userFromDto);
+        if (userDto.getName() != null) {
+            user.setName(userDto.getName());
+        }
+        if (userDto.getEmail() != null) {
+            user.setEmail(userDto.getEmail());
+        }
+
+        User userForDto = userService.update(user);
         return UserMapper.toDto(userForDto);
     }
 

@@ -3,11 +3,14 @@ package ru.practicum.shareit.item;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.constraintGroup.Post;
+import ru.practicum.shareit.constraintGroup.Put;
+import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.user.UserService;
 
-import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -27,11 +30,13 @@ public class ItemController {
 
     @PostMapping("/items")
     public ItemDto postItem(@RequestHeader("X-Sharer-User-Id") Long userId,
-                            @Valid @RequestBody Item item) throws UserNotFoundException {
-        userService.getUserById(userId);
+                            @Validated(Post.class)
+                            @RequestBody ItemDto itemDto) throws UserNotFoundException {
+        User user = userService.getUserById(userId);
 
-        item.setUserId(userId);
-        Item itemForDto = itemService.create(item);
+        Item itemFromDto = ItemMapper.toItem(itemDto);
+        itemFromDto.setUser(user);
+        Item itemForDto = itemService.create(itemFromDto);
         return ItemMapper.toDto(itemForDto);
     }
 
@@ -53,19 +58,29 @@ public class ItemController {
 
     @PatchMapping("/items/{itemId}")
     public ItemDto putItem(@RequestHeader("X-Sharer-User-Id") Long userId,
-                           @PathVariable Long itemId,
-                           @Valid @RequestBody ItemDto itemDto) throws UserNotFoundException, ItemNotFoundException {
-        userService.getUserById(userId);
+                           @Validated(Put.class)
+                           @RequestBody ItemDto itemDto,
+                           @PathVariable Long itemId) throws UserNotFoundException, ItemNotFoundException {
+        User user = userService.getUserById(userId);
+        Item item = itemService.getItemByUserIdAndItemId(userId, itemId);
 
-        Item itemFromDto = ItemMapper.toItem(itemDto);
-        itemFromDto.setId(itemId);
+        if (itemDto.getName() != null) {
+            item.setName(itemDto.getName());
+        }
+        if (itemDto.getDescription() != null) {
+            item.setDescription(itemDto.getDescription());
+        }
+        if (itemDto.getAvailable() != null) {
+            item.setAvailable(itemDto.getAvailable());
+        }
+        item.setUser(user);
 
-        Item itemForDto = itemService.update(userId, itemFromDto);
+        Item itemForDto = itemService.update(item);
         return ItemMapper.toDto(itemForDto);
     }
 
     @GetMapping("/items/search")
-    public Collection<ItemDto> findFilmsBySearch(@RequestParam String text) {
+    public Collection<ItemDto> findItemsBySearch(@RequestParam String text) {
         if (text.isEmpty()) {
             return new ArrayList<>();
         }
