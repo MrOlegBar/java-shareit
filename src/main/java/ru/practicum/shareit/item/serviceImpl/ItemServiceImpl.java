@@ -9,6 +9,7 @@ import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.ItemService;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Service("ItemServiceImpl")
 @Slf4j
@@ -55,6 +56,11 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Collection<Item> findItemsBySearch(String text) {
-        return itemRepository.findItemsBySearch(text.toLowerCase().substring(1));
+        String lowercaseText = text.toLowerCase();
+        return itemRepository.findAll().stream()
+                .filter(savedItem -> (savedItem.getAvailable())
+                        && (savedItem.getName().toLowerCase().contains(lowercaseText)
+                        || savedItem.getDescription().toLowerCase().contains(lowercaseText)))
+                .collect(Collectors.toList());
     }
 }
