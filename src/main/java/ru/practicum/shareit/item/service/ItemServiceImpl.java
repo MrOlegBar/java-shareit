@@ -1,4 +1,4 @@
-package ru.practicum.shareit.item.serviceImpl;
+package ru.practicum.shareit.item.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemNotFoundException;
 import ru.practicum.shareit.item.ItemRepository;
-import ru.practicum.shareit.item.ItemService;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -29,7 +28,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Item getItemById(long itemId) throws ItemNotFoundException {
         return itemRepository.findById(itemId).orElseThrow(() -> {
-            log.debug("Вещь с itemId  = {} найдена.", itemId);
+            log.debug("Вещь с itemId  = {} не найдена.", itemId);
             throw new ItemNotFoundException(String.format("Вещь с itemId = %s не найдена.",
                     itemId));
         });
@@ -50,7 +49,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Item update(Item item) throws ItemNotFoundException {
+    public Item update(Item item) {
         return itemRepository.save(item);
     }
 

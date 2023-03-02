@@ -1,6 +1,8 @@
-package ru.practicum.shareit.item;
+package ru.practicum.shareit.item.service;
 
 import ru.practicum.shareit.ValidationException;
+import ru.practicum.shareit.item.Item;
+import ru.practicum.shareit.item.ItemNotFoundException;
 
 import java.util.Collection;
 

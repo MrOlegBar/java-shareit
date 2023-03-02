@@ -1,4 +1,7 @@
-package ru.practicum.shareit.user;
+package ru.practicum.shareit.user.service;
+
+import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.UserNotFoundException;
 
 import java.util.Collection;
 

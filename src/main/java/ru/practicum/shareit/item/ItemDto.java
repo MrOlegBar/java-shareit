@@ -2,6 +2,7 @@ package ru.practicum.shareit.item;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.Value;
 import ru.practicum.shareit.constraintGroup.Post;
 
 import javax.validation.constraints.NotBlank;

@@ -5,6 +5,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.constraintGroup.Post;
 import ru.practicum.shareit.constraintGroup.Put;
+import ru.practicum.shareit.user.service.UserService;
 
 import java.util.stream.Collectors;
 
