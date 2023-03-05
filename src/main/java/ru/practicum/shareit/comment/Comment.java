@@ -1,9 +1,9 @@
-package ru.practicum.shareit.review;
+package ru.practicum.shareit.comment;
 
 import lombok.Data;
 
 @Data
-public class Review {
+public class Comment {
     private int reviewId;
     private int userId;
     private int itemId;

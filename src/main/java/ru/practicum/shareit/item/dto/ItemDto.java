@@ -1,8 +1,8 @@
-package ru.practicum.shareit.item;
+package ru.practicum.shareit.item.dto;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.Value;
+import ru.practicum.shareit.booking.dto.ResponseBookingDto;
 import ru.practicum.shareit.constraintGroup.Post;
 
 import javax.validation.constraints.NotBlank;
@@ -18,4 +18,6 @@ public class ItemDto {
     private String description;
     @NotNull(message = "Статус доступности вещи отсутствует.", groups = Post.class)
     private Boolean available;
+    private ResponseBookingDto lastBooking;
+    private ResponseBookingDto nextBooking;
 }

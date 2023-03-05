@@ -1,7 +1,6 @@
 package ru.practicum.shareit.item;
 
 import lombok.*;
-import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.base.BaseModel;
 
@@ -18,11 +17,10 @@ public class Item extends BaseModel<Long> {
     private String description;
     @Column(name = "available")
     private Boolean available;
-    private User user;
-    //private Booking booking;
+    private User owner;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "id")
     @Override
     public Long getId() {
@@ -35,16 +33,7 @@ public class Item extends BaseModel<Long> {
 
     @ManyToOne
     @JoinColumn(name="user_id")
-    public User getUser() {
-        return user;
+    public User getOwner() {
+        return owner;
     }
-
-    /*@OneToOne(optional = false, mappedBy = "item")
-    public Booking getBooking() {
-        return booking;
-    }
-
-    public void setBooking(Booking booking) {
-        this.booking = booking;
-    }*/
 }

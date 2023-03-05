@@ -5,10 +5,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.dto.RequestBookingDto;
 import ru.practicum.shareit.booking.dto.ResponseBookingDto;
 import ru.practicum.shareit.booking.exception.BookingBadRequestException;
+import ru.practicum.shareit.booking.exception.BookingNotFoundException;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.BookingState;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.constraintGroup.Post;
@@ -16,7 +19,8 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.user.service.UserService;
 
-import java.net.http.HttpHeaders;
+import javax.servlet.http.HttpServletRequest;
+import javax.transaction.Transactional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -44,7 +48,10 @@ public class BookingController {
             throw new BookingBadRequestException(String.format("Вещь с itemId = %s не доступна для бронирования.",
                     bookingFromDto.getItem().getId()));
         }
-
+        if (userId.equals(bookingFromDto.getItem().getOwner().getId())) {
+            log.debug("Невозможно забронировать свою вещь.");
+            throw new BookingNotFoundException("Невозможно забронировать свою вещь.");
+        }
         if (bookingFromDto.getStartDate().isAfter(bookingFromDto.getEndDate())) {
             log.debug("Дата начала бронирования: {} позже даты окончания бронирования: {}.",
                     bookingFromDto.getStartDate(), bookingFromDto.getEndDate());
@@ -60,30 +67,62 @@ public class BookingController {
         return BookingMapper.toDto(bookingForDto);
     }
 
-    /*@GetMapping(value = { "/bookings", "/bookings/{bookingId}"})
+    @GetMapping(value = { "/bookings", "/bookings/owner", "/bookings/{bookingId}"})
     public Object getBookingS(@RequestHeader("X-Sharer-User-Id") Long userId,
-                           @PathVariable(required = false) Long bookingId) throws UserNotFoundException {
+                              @PathVariable(required = false) Long bookingId,
+                              @RequestParam(required = false, defaultValue = "ALL") BookingState state,
+                              HttpServletRequest request)
+            throws UserNotFoundException, BookingNotFoundException {
+
         userService.getUserById(userId);
 
-        if (bookingId == null) {
-            return bookingService.getAllBookingsByUserId(userId).stream()
+        if (request.getServletPath().equals("/bookings")) {
+            return bookingService.getAllBookingsByBookerId(userId, state).stream()
                     .map(BookingMapper::toDto)
-                    .collect(Collectors.toSet());
-        } else {
-            Booking bookingForDto = bookingService.getBookingById(bookingId);
-            return BookingMapper.toDto(bookingForDto);
-        }
-    }*/
+                    .collect(Collectors.toList());
 
-    /*@PatchMapping("/bookings/{bookingId}")
+        } else if (request.getServletPath().equals("/bookings/owner")){
+            return bookingService.getAllBookingsByOwnerId(userId, state).stream()
+                    .map(BookingMapper::toDto)
+                    .collect(Collectors.toList());
+
+        }else {
+            Booking bookingForDto = bookingService.getBookingById(bookingId);
+            if ((userId.equals(bookingForDto.getBooker().getId())) ||
+                    (userId.equals(bookingForDto.getItem().getOwner().getId()))) {
+                return BookingMapper.toDto(bookingForDto);
+            } else {
+                log.debug("Получение данных о бронировании доступно автору бронирования или владельцу вещи.");
+                throw new BookingNotFoundException("Получение данных о бронировании доступно автору бронирования или " +
+                        "владельцу вещи.");
+            }
+        }
+    }
+
+    @PatchMapping("/bookings/{bookingId}")
+    @Transactional
     public ResponseBookingDto putItem(@RequestHeader("X-Sharer-User-Id") Long userId,
-                           @RequestBody RequestBookingDto requestBookingDto,
-                           @PathVariable Long bookingId,
-                           @RequestParam Boolean approved) {
-        User user = userService.getUserById(userId);
+                                      @PathVariable Long bookingId,
+                                      @RequestParam Boolean approved) {
+        userService.getUserById(userId);
         Booking booking = bookingService.getBookingById(bookingId);
+
+        if (!userId.equals(booking.getItem().getOwner().getId())) {
+            log.debug("Подтверждение бронирования доступно только владельцу вещи.");
+            throw new BookingNotFoundException("Подтверждение бронирования доступно только владельцу вещи.");
+        }
+        if (approved && booking.getStatus().equals(BookingStatus.APPROVED)) {
+            log.debug("Статус бронирования уже подтвержден.");
+            throw new BookingBadRequestException("Статус бронирования уже подтвержден.");
+        }
+
+        if (approved) {
+            booking.setStatus(BookingStatus.APPROVED);
+        } else {
+            booking.setStatus(BookingStatus.REJECTED);
+        }
 
         Booking bookingForDto = bookingService.update(booking);
         return BookingMapper.toDto(bookingForDto);
-    }*/
+    }
 }

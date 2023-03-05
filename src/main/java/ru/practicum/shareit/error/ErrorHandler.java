@@ -1,8 +1,10 @@
-package ru.practicum.shareit;
+package ru.practicum.shareit.error;
 
+import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -11,6 +13,7 @@ import ru.practicum.shareit.booking.exception.BookingNotFoundException;
 import ru.practicum.shareit.item.ItemNotFoundException;
 import ru.practicum.shareit.user.UserNotFoundException;
 
+import javax.servlet.ServletException;
 import java.sql.SQLException;
 import java.util.Objects;
 
@@ -35,11 +38,16 @@ public class ErrorHandler {
         return new ErrorResponse(e.getMessage());
     }
 
-    /*@ExceptionHandler(ValidationException.class)
+    @ExceptionHandler(ConversionFailedException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleValidation(final RuntimeException e) {
-        return new ErrorResponse(e.getMessage());
-    }*/
+    public ErrorResponse handleConversionValidation(final RuntimeException e) {
+        return new ErrorResponse("Unknown state: UNSUPPORTED_STATUS");
+    }
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleRequestParamValidation(final ServletException e) {
+        return new ErrorResponse("Параметр запроса отсутствует.");
+    }
 
     @ExceptionHandler({UserNotFoundException.class, ItemNotFoundException.class, BookingNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -47,9 +55,9 @@ public class ErrorHandler {
         return new ErrorResponse(e.getMessage());
     }
 
-    @ExceptionHandler(org.postgresql.util.PSQLException.class)
+    @ExceptionHandler(org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleSQLError(SQLException e) {
-        return new ErrorResponse(e.getMessage().split("Подробности: ")[1]);
+        return new ErrorResponse(e.getMessage().split(":")[0]);
     }
 }

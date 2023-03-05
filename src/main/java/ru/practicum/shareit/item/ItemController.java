@@ -7,6 +7,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.constraintGroup.Post;
 import ru.practicum.shareit.constraintGroup.Put;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserNotFoundException;
@@ -36,9 +38,9 @@ public class ItemController {
         User user = userService.getUserById(userId);
 
         Item itemFromDto = ItemMapper.toItem(itemDto);
-        itemFromDto.setUser(user);
+        itemFromDto.setOwner(user);
         Item itemForDto = itemService.create(itemFromDto);
-        return ItemMapper.toDto(itemForDto);
+        return ItemMapper.toItemDto(itemForDto);
     }
 
     @GetMapping(value = { "/items", "/items/{itemId}"})
@@ -48,12 +50,9 @@ public class ItemController {
         userService.getUserById(userId);
 
         if (itemId == null) {
-            return itemService.getAllItemsByUserId(userId).stream()
-                    .map(ItemMapper::toDto)
-                    .collect(Collectors.toSet());
+            return itemService.getAllItemsDtoByUserId(userId);
         } else {
-            Item itemForDto = itemService.getItemById(itemId);
-            return ItemMapper.toDto(itemForDto);
+            return itemService.getItemDtoByItemId(userId, itemId);
         }
     }
 
@@ -63,7 +62,7 @@ public class ItemController {
                            @RequestBody ItemDto itemDto,
                            @PathVariable Long itemId) throws UserNotFoundException, ItemNotFoundException {
         User user = userService.getUserById(userId);
-        Item item = itemService.getItemByUserIdAndItemId(userId, itemId);
+        Item item = itemService.getItemById(itemId);
 
         if (itemDto.getName() != null) {
             item.setName(itemDto.getName());
@@ -74,10 +73,10 @@ public class ItemController {
         if (itemDto.getAvailable() != null) {
             item.setAvailable(itemDto.getAvailable());
         }
-        item.setUser(user);
+        item.setOwner(user);
 
         Item itemForDto = itemService.update(item);
-        return ItemMapper.toDto(itemForDto);
+        return ItemMapper.toItemDto(itemForDto);
     }
 
     @GetMapping("/items/search")
@@ -87,7 +86,7 @@ public class ItemController {
         }
 
         return itemService.findItemsBySearch(text).stream()
-                .map(ItemMapper::toDto)
+                .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
 }

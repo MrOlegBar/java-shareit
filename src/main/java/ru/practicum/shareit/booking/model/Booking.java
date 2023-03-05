@@ -24,7 +24,7 @@ public class Booking extends BaseModel<Long> {
     private BookingStatus status;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "id")
     @Override
     public Long getId() {
@@ -35,7 +35,7 @@ public class Booking extends BaseModel<Long> {
         this.id = id;
     }
 
-    @ManyToOne(optional = false)
+    @ManyToOne
     @JoinColumn(name = "booker_id")
     public User getBooker() {
         return booker;
@@ -45,7 +45,7 @@ public class Booking extends BaseModel<Long> {
         this.booker = booker;
     }
 
-    @OneToOne(optional = false)
+    @ManyToOne
     @JoinColumn(name = "item_id")
     public Item getItem() {
         return item;
