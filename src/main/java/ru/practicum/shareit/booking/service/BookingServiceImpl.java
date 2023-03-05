@@ -47,14 +47,16 @@ public class BookingServiceImpl implements BookingService {
                         startDateDescSort);
                 break;
             case PAST:
-                bookings = bookingRepository.findAllByBooker_IdAndEndDateIsBefore(bookerId, dateTimeNow, startDateDescSort);
+                bookings = bookingRepository.findAllByBooker_IdAndEndDateIsBefore(bookerId, dateTimeNow,
+                        startDateDescSort);
                 break;
             case FUTURE:
-                bookings = bookingRepository.findAllByBooker_IdAndStartDateIsAfter(bookerId, dateTimeNow, startDateDescSort);
+                bookings = bookingRepository.findAllByBooker_IdAndStartDateIsAfter(bookerId, dateTimeNow,
+                        startDateDescSort);
                 break;
             case CURRENT:
-                bookings = bookingRepository.findAllByBooker_IdAndStartDateIsBeforeAndEndDateIsAfter(bookerId, dateTimeNow,
-                        dateTimeNow, startDateDescSort);
+                bookings = bookingRepository.findAllByBooker_IdAndStartDateIsBeforeAndEndDateIsAfter(bookerId,
+                        dateTimeNow, dateTimeNow, startDateDescSort);
                 break;
         }
         return bookings;

@@ -40,17 +40,15 @@ public class BookingController {
     public ResponseBookingDto postBooking(@RequestHeader("X-Sharer-User-Id") Long userId,
                                           @Validated(Post.class) @RequestBody RequestBookingDto requestBookingDto)
             throws UserNotFoundException, BookingBadRequestException {
-        User booker = userService.getUserById(userId);
         Booking bookingFromDto = BookingMapper.toBooking(requestBookingDto);
-
+        if (userId.equals(bookingFromDto.getItem().getOwner().getId())) {
+            log.debug("Невозможно забронировать свою вещь.");
+            throw new BookingNotFoundException("Невозможно забронировать свою вещь.");
+        }
         if (!bookingFromDto.getItem().getAvailable()) {
             log.debug("Вещь с itemId  = {} не доступна для бронирования.", bookingFromDto.getItem().getId());
             throw new BookingBadRequestException(String.format("Вещь с itemId = %s не доступна для бронирования.",
                     bookingFromDto.getItem().getId()));
-        }
-        if (userId.equals(bookingFromDto.getItem().getOwner().getId())) {
-            log.debug("Невозможно забронировать свою вещь.");
-            throw new BookingNotFoundException("Невозможно забронировать свою вещь.");
         }
         if (bookingFromDto.getStartDate().isAfter(bookingFromDto.getEndDate())) {
             log.debug("Дата начала бронирования: {} позже даты окончания бронирования: {}.",
@@ -59,6 +57,7 @@ public class BookingController {
                             "бронирования: %tF %tT.", bookingFromDto.getStartDate(), bookingFromDto.getStartDate(),
                     bookingFromDto.getEndDate(), bookingFromDto.getEndDate()));
         }
+        User booker = userService.getUserById(userId);
 
         bookingFromDto.setBooker(booker);
         bookingFromDto.setStatus(BookingStatus.WAITING);
@@ -85,7 +84,6 @@ public class BookingController {
             return bookingService.getAllBookingsByOwnerId(userId, state).stream()
                     .map(BookingMapper::toDto)
                     .collect(Collectors.toList());
-
         }else {
             Booking bookingForDto = bookingService.getBookingById(bookingId);
             if ((userId.equals(bookingForDto.getBooker().getId())) ||

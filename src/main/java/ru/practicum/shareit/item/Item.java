@@ -20,7 +20,7 @@ public class Item extends BaseModel<Long> {
     private User owner;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     @Override
     public Long getId() {
@@ -32,7 +32,7 @@ public class Item extends BaseModel<Long> {
     }
 
     @ManyToOne
-    @JoinColumn(name="user_id")
+    @JoinColumn(name="owner_id")
     public User getOwner() {
         return owner;
     }

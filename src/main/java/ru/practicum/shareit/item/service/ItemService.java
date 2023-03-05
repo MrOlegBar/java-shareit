@@ -2,7 +2,7 @@ package ru.practicum.shareit.item.service;
 
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemNotFoundException;
-import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ShortItemDto;
 
 import java.util.Collection;
 
@@ -11,9 +11,9 @@ public interface ItemService {
 
     Item getItemById(long itemId);
 
-    ItemDto getItemDtoByItemId(long userId, long itemId) throws ItemNotFoundException;
+    ShortItemDto getItemDtoByItemId(long userId, long itemId) throws ItemNotFoundException;
 
-    Collection<ItemDto> getAllItemsDtoByUserId(long userId);
+    Collection<ShortItemDto> getAllItemsDtoByUserId(long userId);
 
     Item getItemByUserIdAndItemId(long userId, long itemId) throws ItemNotFoundException;
 

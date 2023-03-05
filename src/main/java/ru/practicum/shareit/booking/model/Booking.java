@@ -24,7 +24,7 @@ public class Booking extends BaseModel<Long> {
     private BookingStatus status;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     @Override
     public Long getId() {

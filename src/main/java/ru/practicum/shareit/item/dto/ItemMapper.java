@@ -14,6 +14,14 @@ public class ItemMapper {
                 .available(item.getAvailable())
                 .build();
     }
+    public static ShortItemDto toShortItemDto(Item item) {
+        return ShortItemDto.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .description(item.getDescription())
+                .available(item.getAvailable())
+                .build();
+    }
 
     public static Item toItem(ItemDto itemDto) {
         Item item = new Item();

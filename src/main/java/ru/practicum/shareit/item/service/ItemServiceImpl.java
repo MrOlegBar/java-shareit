@@ -5,12 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingMapper;
-import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.item.Item;
 import ru.practicum.shareit.item.ItemNotFoundException;
 import ru.practicum.shareit.item.ItemRepository;
-import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
+import ru.practicum.shareit.item.dto.ShortItemDto;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -44,22 +43,22 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDto getItemDtoByItemId(long userId, long itemId) throws ItemNotFoundException {
-        ItemDto itemDto = ItemMapper.toItemDto(getItemById(itemId));
+    public ShortItemDto getItemDtoByItemId(long userId, long itemId) throws ItemNotFoundException {
+        ShortItemDto shortItemDto = ItemMapper.toShortItemDto(getItemById(itemId));
 
         if (itemRepository.findItemByOwner_IdAndId(userId, itemId).isPresent()) {
-            setBookingsToItemDto(itemDto);
+            setBookingsToShortItemDto(shortItemDto);
         }
-        return itemDto;
+        return shortItemDto;
     }
 
     @Override
-    public Collection<ItemDto> getAllItemsDtoByUserId(long userId) {
+    public Collection<ShortItemDto> getAllItemsDtoByUserId(long userId) {
         Collection<Item> items = itemRepository.findAllByOwner_Id(userId);
 
         return items.stream()
-                .map(ItemMapper::toItemDto)
-                .peek(this::setBookingsToItemDto)
+                .map(ItemMapper::toShortItemDto)
+                .peek(this::setBookingsToShortItemDto)
                 .collect(Collectors.toList());
     }
 
@@ -87,19 +86,34 @@ public class ItemServiceImpl implements ItemService {
                 .collect(Collectors.toList());
     }
 
-    private void setBookingsToItemDto(ItemDto itemDto) {
+    private void setBookingsToShortItemDto(ShortItemDto shortItemDto) {
         LocalDateTime dateTimeNow = LocalDateTime.now();
-        if (bookingRepository.findLastByItem_IdAndStatusAndEndDateIsBefore(itemDto.getId(), BookingStatus.APPROVED, dateTimeNow).isPresent()) {
 
-            itemDto.setLastBooking(BookingMapper.toDto(bookingRepository
-                    .findLastByItem_IdAndStatusAndEndDateIsBefore(itemDto.getId(), BookingStatus.APPROVED, dateTimeNow).get()));
+        if (bookingRepository.findFirstByItem_IdAndEndDateIsBeforeOrderByEndDateAsc(shortItemDto.getId(), dateTimeNow).isPresent()) {
+
+            shortItemDto.setLastBooking(BookingMapper.toDtoForItem(bookingRepository
+                    .findFirstByItem_IdAndEndDateIsBeforeOrderByEndDateAsc(shortItemDto.getId(), dateTimeNow).get()));
+
+            setNextBooking(shortItemDto, dateTimeNow);
+        } else if (bookingRepository.findFirstByItem_IdAndStartDateIsAfterOrderByStartDateAsc(shortItemDto.getId(), dateTimeNow).isPresent()) {
+            shortItemDto.setNextBooking(BookingMapper.toDtoForItem(bookingRepository
+                    .findFirstByItem_IdAndStartDateIsAfterOrderByStartDateAsc(shortItemDto.getId(), dateTimeNow).get()));
+
+            setNextBooking(shortItemDto, dateTimeNow);
         }
+    }
 
-        if (bookingRepository
-                .findFirstByItem_IdAndStatusAndEndDateIsAfter(itemDto.getId(), BookingStatus.APPROVED, dateTimeNow).isPresent()) {
+    private void setNextBooking(ShortItemDto shortItemDto, LocalDateTime dateTimeNow) {
+        if (bookingRepository.findFirstByItem_IdAndStartDateIsAfterOrderByStartDateAsc(shortItemDto.getId(), shortItemDto.getLastBooking().getEnd())
+                .isPresent()) {
 
-            itemDto.setNextBooking(BookingMapper.toDto(bookingRepository
-                    .findFirstByItem_IdAndStatusAndEndDateIsAfter(itemDto.getId(), BookingStatus.APPROVED, dateTimeNow).get()));
+            shortItemDto.setNextBooking(BookingMapper.toDtoForItem(bookingRepository
+                    .findFirstByItem_IdAndStartDateIsAfterOrderByStartDateAsc(shortItemDto.getId(), shortItemDto.getLastBooking().getEnd()).get()));
+
+        } else if (bookingRepository.findFirstByItem_IdAndStartDateIsAfterOrderByStartDateAsc(shortItemDto.getId(), dateTimeNow).isPresent()) {
+
+            shortItemDto.setNextBooking(BookingMapper.toDtoForItem(bookingRepository
+                    .findFirstByItem_IdAndStartDateIsAfterOrderByStartDateAsc(shortItemDto.getId(), dateTimeNow).get()));
         }
     }
 }

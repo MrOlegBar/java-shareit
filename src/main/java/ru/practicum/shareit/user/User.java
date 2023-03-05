@@ -17,7 +17,7 @@ public class User extends BaseModel<Long> {
     private String email;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     @Override
     public Long getId() {
