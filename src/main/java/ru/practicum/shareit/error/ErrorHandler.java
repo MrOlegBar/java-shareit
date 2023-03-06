@@ -43,6 +43,7 @@ public class ErrorHandler {
     public ErrorResponse handleConversionValidation(final RuntimeException e) {
         return new ErrorResponse("Unknown state: UNSUPPORTED_STATUS");
     }
+
     @ExceptionHandler(MissingServletRequestParameterException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleRequestParamValidation(final ServletException e) {

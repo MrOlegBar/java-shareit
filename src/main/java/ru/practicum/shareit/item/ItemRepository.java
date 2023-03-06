@@ -8,5 +8,6 @@ import java.util.Optional;
 
 public interface ItemRepository extends JpaRepository<Item, Long> {
     Collection<Item> findAllByOwner_Id(Long userId);
+
     Optional<Item> findItemByOwner_IdAndId(Long userId, Long itemId);
 }

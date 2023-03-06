@@ -9,7 +9,9 @@ import javax.persistence.*;
 @Table(name = "users",
         uniqueConstraints = @UniqueConstraint(name = "unique_email", columnNames = "email"))
 @NoArgsConstructor
-@Setter @Getter @ToString
+@Setter
+@Getter
+@ToString
 public class User extends BaseModel<Long> {
     @Column(name = "email")
     private String email;

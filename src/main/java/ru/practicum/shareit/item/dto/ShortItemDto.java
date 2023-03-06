@@ -5,7 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Builder
-@Getter @Setter
+@Getter
+@Setter
 public class ShortItemDto {
     private Long id;
     private String name;

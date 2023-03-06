@@ -102,7 +102,7 @@ public class ItemServiceImpl implements ItemService {
         LocalDateTime dateTimeNow = LocalDateTime.now();
 
         if (bookingRepository.findFirstByItem_IdAndStatusAndEndDateIsBeforeOrderByEndDateAsc(itemDto.getId(),
-                        BookingStatus.APPROVED, dateTimeNow).isPresent()) {
+                BookingStatus.APPROVED, dateTimeNow).isPresent()) {
 
             itemDto.setLastBooking(BookingMapper.toShortBookingDto(bookingRepository
                     .findFirstByItem_IdAndStatusAndEndDateIsBeforeOrderByEndDateAsc(itemDto.getId(),
@@ -110,7 +110,7 @@ public class ItemServiceImpl implements ItemService {
 
         }
         if (bookingRepository.findFirstByItem_IdAndStatusAndStartDateIsAfterOrderByStartDateAsc(itemDto.getId()
-                        , BookingStatus.APPROVED, dateTimeNow).isPresent()) {
+                , BookingStatus.APPROVED, dateTimeNow).isPresent()) {
 
             itemDto.setNextBooking(BookingMapper.toShortBookingDto(bookingRepository
                     .findFirstByItem_IdAndStatusAndStartDateIsAfterOrderByStartDateAsc(itemDto.getId(),

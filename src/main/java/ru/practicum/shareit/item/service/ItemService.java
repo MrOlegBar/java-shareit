@@ -19,6 +19,7 @@ public interface ItemService {
     Item getItemByUserIdAndItemId(long userId, long itemId) throws ItemNotFoundException;
 
     Item update(Item item) throws ItemNotFoundException;
+
     Collection<Item> findItemsBySearch(String text);
 
     Comment createComment(Comment comment);

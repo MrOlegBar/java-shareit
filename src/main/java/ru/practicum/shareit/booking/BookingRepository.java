@@ -20,6 +20,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     Collection<Booking> findAllByBooker_IdAndStartDateIsAfter(Long bookerId, LocalDateTime startDate,
                                                               Sort startDateDescSort);
+
     @Query("SELECT b FROM Booking b WHERE b.booker.id = ?1 AND ?2 BETWEEN b.startDate AND b.endDate")
     Collection<Booking> findAllByBooker_IdAndStartDateIsBeforeAndEndDateIsAfter(Long bookerId, LocalDateTime dateTimeNow);
 
@@ -34,6 +35,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Query("SELECT b FROM Booking b WHERE b.item.owner.id = ?1 AND ?2 BETWEEN b.startDate AND b.endDate")
     Collection<Booking> findAllByItem_Owner_IdAndStartDateIsBeforeAndEndDateIsAfter(Long ownerId,
                                                                                     LocalDateTime dateTimeNow);
+
     Optional<Booking> findFirstByItem_IdAndStatusAndEndDateIsBeforeOrderByEndDateAsc(Long itemId,
                                                                                      BookingStatus APPROVED,
                                                                                      LocalDateTime dateTimeNow);

@@ -5,7 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Builder
-@Getter @Setter
+@Getter
+@Setter
 public class ShortBookingDto {
     private Long id;
     private Long bookerId;

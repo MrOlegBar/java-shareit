@@ -10,7 +10,9 @@ import java.util.Set;
 
 @Entity
 @Table(name = "items")
-@Getter @Setter @ToString
+@Getter
+@Setter
+@ToString
 @NoArgsConstructor
 public class Item extends BaseModel<Long> {
     @Column(name = "name")
@@ -35,10 +37,11 @@ public class Item extends BaseModel<Long> {
     }
 
     @ManyToOne
-    @JoinColumn(name="owner_id")
+    @JoinColumn(name = "owner_id")
     public User getOwner() {
         return owner;
     }
+
     @OneToMany(mappedBy = "item")
     public Set<Comment> getComments() {
         return comments;

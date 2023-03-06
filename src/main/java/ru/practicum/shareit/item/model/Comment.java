@@ -9,7 +9,9 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "comments")
-@Getter @Setter @ToString
+@Getter
+@Setter
+@ToString
 public class Comment extends BaseModel<Long> {
     @Column(name = "text")
     private String text;
@@ -31,7 +33,7 @@ public class Comment extends BaseModel<Long> {
     }
 
     @ManyToOne
-    @JoinColumn(name="authorName_id")
+    @JoinColumn(name = "authorName_id")
     public User getAuthor() {
         return author;
     }
@@ -41,7 +43,7 @@ public class Comment extends BaseModel<Long> {
     }
 
     @ManyToOne
-    @JoinColumn(name="item_id")
+    @JoinColumn(name = "item_id")
     public Item getItem() {
         return item;
     }

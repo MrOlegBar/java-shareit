@@ -14,7 +14,7 @@ public class BookingMapper {
     private static ItemService itemService;
 
     @Autowired
-    public BookingMapper(@Qualifier("ItemServiceImpl")ItemService itemService) {
+    public BookingMapper(@Qualifier("ItemServiceImpl") ItemService itemService) {
         BookingMapper.itemService = itemService;
     }
 
@@ -28,6 +28,7 @@ public class BookingMapper {
                 .item(ItemMapper.toShortItemDto(booking.getItem()))
                 .build();
     }
+
     public static ShortBookingDto toShortBookingDto(Booking booking) {
         return ShortBookingDto.builder()
                 .id(booking.getId())

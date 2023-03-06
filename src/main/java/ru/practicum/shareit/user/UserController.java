@@ -23,7 +23,7 @@ public class UserController {
         return UserMapper.toDto(userForDto);
     }
 
-    @GetMapping(value = { "/users", "/users/{userId}"})
+    @GetMapping(value = {"/users", "/users/{userId}"})
     public Object getUserS(@PathVariable(required = false) Long userId) throws UserNotFoundException {
         if (userId == null) {
             return userService.getAllUsers().stream()

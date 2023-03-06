@@ -9,7 +9,8 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Builder
-@Getter @Setter
+@Getter
+@Setter
 public class LessShortItemDto {
     private Long id;
     @NotBlank(message = "Название вещи отсутствует или представлено пустым символом.", groups = Post.class)

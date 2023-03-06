@@ -10,7 +10,8 @@ import javax.validation.constraints.FutureOrPresent;
 import java.time.LocalDateTime;
 
 @Builder
-@Getter @Setter
+@Getter
+@Setter
 public class BookingDtoForRequest {
     private Long itemId;
     @FutureOrPresent(message = "Дата начала бронирования не должна быть в прошлом.", groups = Post.class)

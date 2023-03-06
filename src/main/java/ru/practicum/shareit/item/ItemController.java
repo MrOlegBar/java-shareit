@@ -47,7 +47,7 @@ public class ItemController {
     @PostMapping("/items")
     public LessShortItemDto postItem(@RequestHeader("X-Sharer-User-Id") Long userId,
                                      @Validated(Post.class)
-                            @RequestBody LessShortItemDto lessShortItemDto) throws UserNotFoundException {
+                                     @RequestBody LessShortItemDto lessShortItemDto) throws UserNotFoundException {
         User user = userService.getUserById(userId);
 
         Item itemFromDto = ItemMapper.toItem(lessShortItemDto);
@@ -56,7 +56,7 @@ public class ItemController {
         return ItemMapper.toItemDtoForPostOrPut(itemForDto);
     }
 
-    @GetMapping(value = { "/items", "/items/{itemId}"})
+    @GetMapping(value = {"/items", "/items/{itemId}"})
     public Object getItemS(@RequestHeader("X-Sharer-User-Id") Long userId,
                            @PathVariable(required = false) Long itemId) throws UserNotFoundException,
             ItemNotFoundException {
@@ -72,7 +72,7 @@ public class ItemController {
     @PatchMapping("/items/{itemId}")
     public LessShortItemDto putItem(@RequestHeader("X-Sharer-User-Id") Long userId,
                                     @Validated(Put.class)
-                           @RequestBody LessShortItemDto lessShortItemDto,
+                                    @RequestBody LessShortItemDto lessShortItemDto,
                                     @PathVariable Long itemId) throws UserNotFoundException, ItemNotFoundException {
         User user = userService.getUserById(userId);
         Item item = itemService.getItemById(itemId);

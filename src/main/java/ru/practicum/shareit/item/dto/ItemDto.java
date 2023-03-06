@@ -11,7 +11,8 @@ import javax.validation.constraints.NotNull;
 import java.util.Set;
 
 @Builder
-@Getter @Setter
+@Getter
+@Setter
 public class ItemDto {
     private Long id;
     @NotBlank(message = "Название вещи отсутствует или представлено пустым символом.", groups = Post.class)

@@ -68,21 +68,22 @@ public class BookingController {
 
     @GetMapping(value = {"/bookings/{bookingId}"})
     public BookingDto getBookingsById(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                  @PathVariable Long bookingId) throws UserNotFoundException,
+                                      @PathVariable Long bookingId) throws UserNotFoundException,
             BookingNotFoundException {
 
         userService.getUserById(userId);
         Booking bookingForDto = bookingService.getBookingById(bookingId);
 
-            if ((userId.equals(bookingForDto.getBooker().getId())) ||
-                    (userId.equals(bookingForDto.getItem().getOwner().getId()))) {
-                return BookingMapper.toBookingDto(bookingForDto);
-            } else {
-                log.debug("Получение данных о бронировании доступно автору бронирования или владельцу вещи.");
-                throw new BookingNotFoundException("Получение данных о бронировании доступно автору бронирования или " +
-                        "владельцу вещи.");
-            }
+        if ((userId.equals(bookingForDto.getBooker().getId())) ||
+                (userId.equals(bookingForDto.getItem().getOwner().getId()))) {
+            return BookingMapper.toBookingDto(bookingForDto);
+        } else {
+            log.debug("Получение данных о бронировании доступно автору бронирования или владельцу вещи.");
+            throw new BookingNotFoundException("Получение данных о бронировании доступно автору бронирования или " +
+                    "владельцу вещи.");
+        }
     }
+
     @GetMapping(value = {"/bookings"})
     public Collection<BookingDto> getBookings(@RequestHeader("X-Sharer-User-Id") Long userId,
                                               @RequestParam(required = false, defaultValue = "ALL") BookingState state)
@@ -91,20 +92,21 @@ public class BookingController {
         userService.getUserById(userId);
 
         return bookingService.getAllBookingsByBookerId(userId, state).stream()
-                    .map(BookingMapper::toBookingDto)
-                    .collect(Collectors.toList());
+                .map(BookingMapper::toBookingDto)
+                .collect(Collectors.toList());
     }
+
     @GetMapping(value = {"/bookings/owner"})
     public Collection<BookingDto> getBookingsOwner(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                                 @RequestParam(required = false,
-                                                         defaultValue = "ALL") BookingState state)
+                                                   @RequestParam(required = false,
+                                                           defaultValue = "ALL") BookingState state)
             throws UserNotFoundException, BookingNotFoundException {
 
         userService.getUserById(userId);
 
         return bookingService.getAllBookingsByOwnerId(userId, state).stream()
-                    .map(BookingMapper::toBookingDto)
-                    .collect(Collectors.toList());
+                .map(BookingMapper::toBookingDto)
+                .collect(Collectors.toList());
     }
 
     @PatchMapping("/bookings/{bookingId}")

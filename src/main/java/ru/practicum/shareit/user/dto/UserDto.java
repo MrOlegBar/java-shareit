@@ -10,7 +10,8 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 
 @Builder
-@Getter @Setter
+@Getter
+@Setter
 public class UserDto {
     private Long id;
     @Email(message = "Email не соответствует формату электронной почты.", groups = {Post.class,

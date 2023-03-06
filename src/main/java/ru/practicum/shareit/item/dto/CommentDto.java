@@ -7,8 +7,10 @@ import ru.practicum.shareit.constraintGroup.Post;
 
 import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
+
 @Builder
-@Getter @Setter
+@Getter
+@Setter
 public class CommentDto {
     private Long id;
     @NotBlank(message = "Текст комментария отсутствует или представлен пустым символом.", groups = Post.class)
