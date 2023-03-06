@@ -48,5 +48,3 @@ create table IF NOT EXISTS COMMENTS
     constraint FKQK5UN5MCV5LB39Q08MU7VQMK2
         foreign key (AUTHOR_NAME_ID) references USERS
 );
-
-
