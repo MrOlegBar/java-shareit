@@ -15,6 +15,8 @@ import ru.practicum.shareit.booking.model.BookingState;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.constraintGroup.Post;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.user.service.UserService;
@@ -28,19 +30,26 @@ import java.util.stream.Collectors;
 public class BookingController {
     private final UserService userService;
     private final BookingService bookingService;
+    private final ItemService itemService;
 
     @Autowired
     public BookingController(@Qualifier("UserServiceImpl") UserService userService,
-                             @Qualifier("BookingServiceImpl") BookingService bookingService) {
+                             @Qualifier("BookingServiceImpl") BookingService bookingService,
+                             @Qualifier("ItemServiceImpl") ItemService itemService) {
         this.userService = userService;
         this.bookingService = bookingService;
+        this.itemService = itemService;
     }
 
     @PostMapping("/bookings")
     public BookingDto postBooking(@RequestHeader("X-Sharer-User-Id") Long userId,
                                   @Validated(Post.class) @RequestBody BookingDtoForRequest bookingDtoForRequest)
             throws UserNotFoundException, BookingBadRequestException {
+
         Booking bookingFromDto = BookingMapper.toBooking(bookingDtoForRequest);
+        Item item = itemService.getItemById(bookingDtoForRequest.getItemId());
+        bookingFromDto.setItem(item);
+
         if (userId.equals(bookingFromDto.getItem().getOwner().getId())) {
             log.debug("Невозможно забронировать свою вещь.");
             throw new BookingNotFoundException("Невозможно забронировать свою вещь.");
