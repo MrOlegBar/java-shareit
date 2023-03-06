@@ -57,7 +57,7 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler(org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleSQLError(SQLException e) {
         return new ErrorResponse(e.getMessage().split(":")[0]);
     }
