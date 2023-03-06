@@ -5,11 +5,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingMapper;
-import ru.practicum.shareit.item.Item;
+import ru.practicum.shareit.booking.model.BookingStatus;
+import ru.practicum.shareit.item.model.Comment;
+import ru.practicum.shareit.item.CommentRepository;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.ItemNotFoundException;
 import ru.practicum.shareit.item.ItemRepository;
-import ru.practicum.shareit.item.dto.ItemMapper;
-import ru.practicum.shareit.item.dto.ShortItemDto;
+import ru.practicum.shareit.item.dto.mapper.ItemMapper;
+import ru.practicum.shareit.item.dto.ItemDto;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -21,11 +24,15 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final BookingRepository bookingRepository;
+    private final CommentRepository commentRepository;
 
     @Autowired
-    public ItemServiceImpl(ItemRepository itemRepository, BookingRepository bookingRepository) {
+    public ItemServiceImpl(ItemRepository itemRepository, BookingRepository bookingRepository,
+                           CommentRepository commentRepository) {
+
         this.itemRepository = itemRepository;
         this.bookingRepository = bookingRepository;
+        this.commentRepository = commentRepository;
     }
 
     @Override
@@ -43,22 +50,22 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ShortItemDto getItemDtoByItemId(long userId, long itemId) throws ItemNotFoundException {
-        ShortItemDto shortItemDto = ItemMapper.toShortItemDto(getItemById(itemId));
+    public ItemDto getItemDtoByItemId(long userId, long itemId) throws ItemNotFoundException {
+        ItemDto itemDto = ItemMapper.toItemDtoForGet(getItemById(itemId));
 
         if (itemRepository.findItemByOwner_IdAndId(userId, itemId).isPresent()) {
-            setBookingsToShortItemDto(shortItemDto);
+            setBookingsToItemDto(itemDto);
         }
-        return shortItemDto;
+        return itemDto;
     }
 
     @Override
-    public Collection<ShortItemDto> getAllItemsDtoByUserId(long userId) {
+    public Collection<ItemDto> getAllItemsDtoByUserId(long userId) {
         Collection<Item> items = itemRepository.findAllByOwner_Id(userId);
 
         return items.stream()
-                .map(ItemMapper::toShortItemDto)
-                .peek(this::setBookingsToShortItemDto)
+                .map(ItemMapper::toItemDtoForGet)
+                .peek(this::setBookingsToItemDto)
                 .collect(Collectors.toList());
     }
 
@@ -86,34 +93,29 @@ public class ItemServiceImpl implements ItemService {
                 .collect(Collectors.toList());
     }
 
-    private void setBookingsToShortItemDto(ShortItemDto shortItemDto) {
-        LocalDateTime dateTimeNow = LocalDateTime.now();
-
-        if (bookingRepository.findFirstByItem_IdAndEndDateIsBeforeOrderByEndDateAsc(shortItemDto.getId(), dateTimeNow).isPresent()) {
-
-            shortItemDto.setLastBooking(BookingMapper.toDtoForItem(bookingRepository
-                    .findFirstByItem_IdAndEndDateIsBeforeOrderByEndDateAsc(shortItemDto.getId(), dateTimeNow).get()));
-
-            setNextBooking(shortItemDto, dateTimeNow);
-        } else if (bookingRepository.findFirstByItem_IdAndStartDateIsAfterOrderByStartDateAsc(shortItemDto.getId(), dateTimeNow).isPresent()) {
-            shortItemDto.setNextBooking(BookingMapper.toDtoForItem(bookingRepository
-                    .findFirstByItem_IdAndStartDateIsAfterOrderByStartDateAsc(shortItemDto.getId(), dateTimeNow).get()));
-
-            setNextBooking(shortItemDto, dateTimeNow);
-        }
+    @Override
+    public Comment createComment(Comment comment) {
+        return commentRepository.save(comment);
     }
 
-    private void setNextBooking(ShortItemDto shortItemDto, LocalDateTime dateTimeNow) {
-        if (bookingRepository.findFirstByItem_IdAndStartDateIsAfterOrderByStartDateAsc(shortItemDto.getId(), shortItemDto.getLastBooking().getEnd())
-                .isPresent()) {
+    private void setBookingsToItemDto(ItemDto itemDto) {
+        LocalDateTime dateTimeNow = LocalDateTime.now();
 
-            shortItemDto.setNextBooking(BookingMapper.toDtoForItem(bookingRepository
-                    .findFirstByItem_IdAndStartDateIsAfterOrderByStartDateAsc(shortItemDto.getId(), shortItemDto.getLastBooking().getEnd()).get()));
+        if (bookingRepository.findFirstByItem_IdAndStatusAndEndDateIsBeforeOrderByEndDateAsc(itemDto.getId(),
+                        BookingStatus.APPROVED, dateTimeNow).isPresent()) {
 
-        } else if (bookingRepository.findFirstByItem_IdAndStartDateIsAfterOrderByStartDateAsc(shortItemDto.getId(), dateTimeNow).isPresent()) {
+            itemDto.setLastBooking(BookingMapper.toShortBookingDto(bookingRepository
+                    .findFirstByItem_IdAndStatusAndEndDateIsBeforeOrderByEndDateAsc(itemDto.getId(),
+                            BookingStatus.APPROVED, dateTimeNow).get()));
 
-            shortItemDto.setNextBooking(BookingMapper.toDtoForItem(bookingRepository
-                    .findFirstByItem_IdAndStartDateIsAfterOrderByStartDateAsc(shortItemDto.getId(), dateTimeNow).get()));
+        }
+        if (bookingRepository.findFirstByItem_IdAndStatusAndStartDateIsAfterOrderByStartDateAsc(itemDto.getId()
+                        , BookingStatus.APPROVED, dateTimeNow).isPresent()) {
+
+            itemDto.setNextBooking(BookingMapper.toShortBookingDto(bookingRepository
+                    .findFirstByItem_IdAndStatusAndStartDateIsAfterOrderByStartDateAsc(itemDto.getId(),
+                            BookingStatus.APPROVED, dateTimeNow).get()));
+
         }
     }
 }

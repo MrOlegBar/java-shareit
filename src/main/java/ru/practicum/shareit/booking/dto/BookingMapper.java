@@ -4,8 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.item.Item;
+import ru.practicum.shareit.item.dto.mapper.ItemMapper;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
+import ru.practicum.shareit.user.dto.UserMapper;
 
 @Component
 public class BookingMapper {
@@ -16,34 +18,30 @@ public class BookingMapper {
         BookingMapper.itemService = itemService;
     }
 
-    public static ResponseBookingDto toDto(Booking booking) {
-        return ResponseBookingDto.builder()
+    public static BookingDto toBookingDto(Booking booking) {
+        return BookingDto.builder()
                 .id(booking.getId())
                 .start(booking.getStartDate())
                 .end(booking.getEndDate())
                 .status(booking.getStatus())
-                .booker(booking.getBooker())
-                .item(booking.getItem())
+                .booker(UserMapper.toShortUserDto(booking.getBooker()))
+                .item(ItemMapper.toShortItemDto(booking.getItem()))
                 .build();
     }
-    public static ResponseBookingForItemDto toDtoForItem(Booking booking) {
-        return ResponseBookingForItemDto.builder()
+    public static ShortBookingDto toShortBookingDto(Booking booking) {
+        return ShortBookingDto.builder()
                 .id(booking.getId())
-                .start(booking.getStartDate())
-                .end(booking.getEndDate())
-                .status(booking.getStatus())
                 .bookerId(booking.getBooker().getId())
-                .item(booking.getItem())
                 .build();
     }
 
-    public static Booking toBooking(RequestBookingDto requestBookingDto) {
-        Item item = itemService.getItemById(requestBookingDto.getItemId());
+    public static Booking toBooking(BookingDtoForRequest bookingDtoForRequest) {
+        Item item = itemService.getItemById(bookingDtoForRequest.getItemId());
 
         Booking booking = new Booking();
         booking.setItem(item);
-        booking.setStartDate(requestBookingDto.getStart());
-        booking.setEndDate(requestBookingDto.getEnd());
+        booking.setStartDate(bookingDtoForRequest.getStart());
+        booking.setEndDate(bookingDtoForRequest.getEnd());
         return booking;
     }
 }

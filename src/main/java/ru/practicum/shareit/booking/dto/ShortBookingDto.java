@@ -1,4 +1,4 @@
-package ru.practicum.shareit.item.dto;
+package ru.practicum.shareit.booking.dto;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Builder
 @Getter @Setter
-public class ShortItemDto {
+public class ShortBookingDto {
     private Long id;
-    private String name;
+    private Long bookerId;
 }

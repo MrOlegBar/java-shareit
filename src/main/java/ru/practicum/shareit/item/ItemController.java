@@ -5,17 +5,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.booking.exception.BookingBadRequestException;
+import ru.practicum.shareit.booking.model.BookingState;
+import ru.practicum.shareit.booking.model.BookingStatus;
+import ru.practicum.shareit.booking.service.BookingService;
+import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.mapper.CommentMapper;
 import ru.practicum.shareit.constraintGroup.Post;
 import ru.practicum.shareit.constraintGroup.Put;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemMapper;
+import ru.practicum.shareit.item.dto.LessShortItemDto;
+import ru.practicum.shareit.item.dto.mapper.ItemMapper;
+import ru.practicum.shareit.item.model.Comment;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.user.service.UserService;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RestController
@@ -23,24 +33,27 @@ import java.util.stream.Collectors;
 public class ItemController {
     private final ItemService itemService;
     private final UserService userService;
+    private final BookingService bookingService;
 
     @Autowired
     public ItemController(@Qualifier("ItemServiceImpl") ItemService itemService,
-                          @Qualifier("UserServiceImpl") UserService userService) {
+                          @Qualifier("UserServiceImpl") UserService userService,
+                          @Qualifier("BookingServiceImpl") BookingService bookingService) {
         this.itemService = itemService;
         this.userService = userService;
+        this.bookingService = bookingService;
     }
 
     @PostMapping("/items")
-    public ItemDto postItem(@RequestHeader("X-Sharer-User-Id") Long userId,
-                            @Validated(Post.class)
-                            @RequestBody ItemDto itemDto) throws UserNotFoundException {
+    public LessShortItemDto postItem(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                     @Validated(Post.class)
+                            @RequestBody LessShortItemDto lessShortItemDto) throws UserNotFoundException {
         User user = userService.getUserById(userId);
 
-        Item itemFromDto = ItemMapper.toItem(itemDto);
+        Item itemFromDto = ItemMapper.toItem(lessShortItemDto);
         itemFromDto.setOwner(user);
         Item itemForDto = itemService.create(itemFromDto);
-        return ItemMapper.toItemDto(itemForDto);
+        return ItemMapper.toItemDtoForPostOrPut(itemForDto);
     }
 
     @GetMapping(value = { "/items", "/items/{itemId}"})
@@ -57,36 +70,62 @@ public class ItemController {
     }
 
     @PatchMapping("/items/{itemId}")
-    public ItemDto putItem(@RequestHeader("X-Sharer-User-Id") Long userId,
-                           @Validated(Put.class)
-                           @RequestBody ItemDto itemDto,
-                           @PathVariable Long itemId) throws UserNotFoundException, ItemNotFoundException {
+    public LessShortItemDto putItem(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                    @Validated(Put.class)
+                           @RequestBody LessShortItemDto lessShortItemDto,
+                                    @PathVariable Long itemId) throws UserNotFoundException, ItemNotFoundException {
         User user = userService.getUserById(userId);
         Item item = itemService.getItemById(itemId);
 
-        if (itemDto.getName() != null) {
-            item.setName(itemDto.getName());
+        if (lessShortItemDto.getName() != null) {
+            item.setName(lessShortItemDto.getName());
         }
-        if (itemDto.getDescription() != null) {
-            item.setDescription(itemDto.getDescription());
+        if (lessShortItemDto.getDescription() != null) {
+            item.setDescription(lessShortItemDto.getDescription());
         }
-        if (itemDto.getAvailable() != null) {
-            item.setAvailable(itemDto.getAvailable());
+        if (lessShortItemDto.getAvailable() != null) {
+            item.setAvailable(lessShortItemDto.getAvailable());
         }
         item.setOwner(user);
 
         Item itemForDto = itemService.update(item);
-        return ItemMapper.toItemDto(itemForDto);
+        return ItemMapper.toItemDtoForPostOrPut(itemForDto);
     }
 
     @GetMapping("/items/search")
-    public Collection<ItemDto> findItemsBySearch(@RequestParam String text) {
+    public Collection<LessShortItemDto> findItemsBySearch(@RequestParam String text) {
         if (text.isEmpty()) {
             return new ArrayList<>();
         }
 
         return itemService.findItemsBySearch(text).stream()
-                .map(ItemMapper::toItemDto)
+                .map(ItemMapper::toItemDtoForPostOrPut)
                 .collect(Collectors.toList());
+    }
+
+    @PostMapping("/items/{itemId}/comment")
+    public CommentDto postComment(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                  @Validated(Post.class) @RequestBody CommentDto commentDto,
+                                  @PathVariable Long itemId) throws UserNotFoundException {
+
+        User user = userService.getUserById(userId);
+        Item item = itemService.getItemById(itemId);
+
+        if (bookingService.getAllBookingsByBookerId(userId, BookingState.ALL).stream()
+                .noneMatch(booking -> Objects.equals(booking.getItem().getId(), itemId) && booking.getBooker().getId()
+                        .equals(userId) && booking.getStatus().equals(BookingStatus.APPROVED) && booking.getEndDate()
+                        .isBefore(LocalDateTime.now()))) {
+
+            log.debug("Вещь с itemId = {} не найдена в истории бронирования пользователя с userId {}.", itemId, userId);
+            throw new BookingBadRequestException(String.format("Вещь с itemId = %s не найдена в истории бронирования " +
+                    "пользователя с userId %s.", itemId, userId));
+        }
+
+        Comment commentFromDto = CommentMapper.toComment(commentDto);
+        commentFromDto.setAuthor(user);
+        commentFromDto.setItem(item);
+
+        Comment commentToDto = itemService.createComment(commentFromDto);
+        return CommentMapper.toCommentDto(commentToDto);
     }
 }

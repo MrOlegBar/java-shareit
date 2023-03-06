@@ -20,7 +20,6 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     Sort startDateDescSort = Sort.by(Sort.Direction.DESC, "startDate");
     Collection<Booking> bookings = new ArrayList<>();
-    LocalDateTime dateTimeNow = LocalDateTime.now();
 
     @Autowired
     public BookingServiceImpl(BookingRepository bookingRepository) {
@@ -47,16 +46,15 @@ public class BookingServiceImpl implements BookingService {
                         startDateDescSort);
                 break;
             case PAST:
-                bookings = bookingRepository.findAllByBooker_IdAndEndDateIsBefore(bookerId, dateTimeNow,
+                bookings = bookingRepository.findAllByBooker_IdAndEndDateIsBefore(bookerId, LocalDateTime.now(),
                         startDateDescSort);
                 break;
             case FUTURE:
-                bookings = bookingRepository.findAllByBooker_IdAndStartDateIsAfter(bookerId, dateTimeNow,
+                bookings = bookingRepository.findAllByBooker_IdAndStartDateIsAfter(bookerId, LocalDateTime.now(),
                         startDateDescSort);
                 break;
             case CURRENT:
-                bookings = bookingRepository.findAllByBooker_IdAndStartDateIsBeforeAndEndDateIsAfter(bookerId,
-                        dateTimeNow, dateTimeNow, startDateDescSort);
+                bookings = bookingRepository.findAllByBooker_IdAndStartDateIsBeforeAndEndDateIsAfter(bookerId, LocalDateTime.now());
                 break;
         }
         return bookings;
@@ -77,17 +75,16 @@ public class BookingServiceImpl implements BookingService {
                         startDateDescSort);
                 break;
             case PAST:
-                bookings = bookingRepository.findAllByItem_Owner_IdAndEndDateIsBefore(ownerId, dateTimeNow,
+                bookings = bookingRepository.findAllByItem_Owner_IdAndEndDateIsBefore(ownerId, LocalDateTime.now(),
                         startDateDescSort);
                 break;
             case FUTURE:
-                bookings = bookingRepository.findAllByItem_Owner_IdAndStartDateIsAfter(ownerId, dateTimeNow,
+                bookings = bookingRepository.findAllByItem_Owner_IdAndStartDateIsAfter(ownerId, LocalDateTime.now(),
                         startDateDescSort);
                 break;
             case CURRENT:
                 bookings = bookingRepository.findAllByItem_Owner_IdAndStartDateIsBeforeAndEndDateIsAfter(ownerId,
-                        dateTimeNow,
-                        dateTimeNow, startDateDescSort);
+                        LocalDateTime.now());
                 break;
         }
         return bookings;

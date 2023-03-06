@@ -11,10 +11,10 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Setter @Getter @ToString
 public class User extends BaseModel<Long> {
-    @Column(name = "name")
-    private String name;
     @Column(name = "email")
     private String email;
+    @Column(name = "name")
+    private String name;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

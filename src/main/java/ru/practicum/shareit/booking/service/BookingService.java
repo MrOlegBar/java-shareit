@@ -13,7 +13,7 @@ public interface BookingService {
 
     Collection<Booking> getAllBookingsByOwnerId(long userId, BookingState state);
 
-    Booking getBookingById(long itemId) throws BookingNotFoundException;
+    Booking getBookingById(long bookingId) throws BookingNotFoundException;
 
     Booking update(Booking booking);
 }

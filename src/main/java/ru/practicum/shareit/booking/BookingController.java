@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingMapper;
-import ru.practicum.shareit.booking.dto.RequestBookingDto;
-import ru.practicum.shareit.booking.dto.ResponseBookingDto;
+import ru.practicum.shareit.booking.dto.BookingDtoForRequest;
+import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.exception.BookingBadRequestException;
 import ru.practicum.shareit.booking.exception.BookingNotFoundException;
 import ru.practicum.shareit.booking.model.Booking;
@@ -19,8 +19,8 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.user.service.UserService;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
+import java.util.Collection;
 import java.util.stream.Collectors;
 
 @RestController
@@ -37,10 +37,10 @@ public class BookingController {
     }
 
     @PostMapping("/bookings")
-    public ResponseBookingDto postBooking(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                          @Validated(Post.class) @RequestBody RequestBookingDto requestBookingDto)
+    public BookingDto postBooking(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                  @Validated(Post.class) @RequestBody BookingDtoForRequest bookingDtoForRequest)
             throws UserNotFoundException, BookingBadRequestException {
-        Booking bookingFromDto = BookingMapper.toBooking(requestBookingDto);
+        Booking bookingFromDto = BookingMapper.toBooking(bookingDtoForRequest);
         if (userId.equals(bookingFromDto.getItem().getOwner().getId())) {
             log.debug("Невозможно забронировать свою вещь.");
             throw new BookingNotFoundException("Невозможно забронировать свою вещь.");
@@ -63,45 +63,55 @@ public class BookingController {
         bookingFromDto.setStatus(BookingStatus.WAITING);
 
         Booking bookingForDto = bookingService.create(bookingFromDto);
-        return BookingMapper.toDto(bookingForDto);
+        return BookingMapper.toBookingDto(bookingForDto);
     }
 
-    @GetMapping(value = { "/bookings", "/bookings/owner", "/bookings/{bookingId}"})
-    public Object getBookingS(@RequestHeader("X-Sharer-User-Id") Long userId,
-                              @PathVariable(required = false) Long bookingId,
-                              @RequestParam(required = false, defaultValue = "ALL") BookingState state,
-                              HttpServletRequest request)
-            throws UserNotFoundException, BookingNotFoundException {
+    @GetMapping(value = {"/bookings/{bookingId}"})
+    public BookingDto getBookingsById(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                  @PathVariable Long bookingId) throws UserNotFoundException,
+            BookingNotFoundException {
 
         userService.getUserById(userId);
+        Booking bookingForDto = bookingService.getBookingById(bookingId);
 
-        if (request.getServletPath().equals("/bookings")) {
-            return bookingService.getAllBookingsByBookerId(userId, state).stream()
-                    .map(BookingMapper::toDto)
-                    .collect(Collectors.toList());
-
-        } else if (request.getServletPath().equals("/bookings/owner")){
-            return bookingService.getAllBookingsByOwnerId(userId, state).stream()
-                    .map(BookingMapper::toDto)
-                    .collect(Collectors.toList());
-        }else {
-            Booking bookingForDto = bookingService.getBookingById(bookingId);
             if ((userId.equals(bookingForDto.getBooker().getId())) ||
                     (userId.equals(bookingForDto.getItem().getOwner().getId()))) {
-                return BookingMapper.toDto(bookingForDto);
+                return BookingMapper.toBookingDto(bookingForDto);
             } else {
                 log.debug("Получение данных о бронировании доступно автору бронирования или владельцу вещи.");
                 throw new BookingNotFoundException("Получение данных о бронировании доступно автору бронирования или " +
                         "владельцу вещи.");
             }
-        }
+    }
+    @GetMapping(value = {"/bookings"})
+    public Collection<BookingDto> getBookings(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                              @RequestParam(required = false, defaultValue = "ALL") BookingState state)
+            throws UserNotFoundException, BookingNotFoundException {
+
+        userService.getUserById(userId);
+
+        return bookingService.getAllBookingsByBookerId(userId, state).stream()
+                    .map(BookingMapper::toBookingDto)
+                    .collect(Collectors.toList());
+    }
+    @GetMapping(value = {"/bookings/owner"})
+    public Collection<BookingDto> getBookingsOwner(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                                 @RequestParam(required = false,
+                                                         defaultValue = "ALL") BookingState state)
+            throws UserNotFoundException, BookingNotFoundException {
+
+        userService.getUserById(userId);
+
+        return bookingService.getAllBookingsByOwnerId(userId, state).stream()
+                    .map(BookingMapper::toBookingDto)
+                    .collect(Collectors.toList());
     }
 
     @PatchMapping("/bookings/{bookingId}")
     @Transactional
-    public ResponseBookingDto putItem(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                      @PathVariable Long bookingId,
-                                      @RequestParam Boolean approved) {
+    public BookingDto putItem(@RequestHeader("X-Sharer-User-Id") Long userId,
+                              @PathVariable Long bookingId,
+                              @RequestParam Boolean approved) {
         userService.getUserById(userId);
         Booking booking = bookingService.getBookingById(bookingId);
 
@@ -121,6 +131,6 @@ public class BookingController {
         }
 
         Booking bookingForDto = bookingService.update(booking);
-        return BookingMapper.toDto(bookingForDto);
+        return BookingMapper.toBookingDto(bookingForDto);
     }
 }

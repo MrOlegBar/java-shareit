@@ -1,10 +1,12 @@
-package ru.practicum.shareit.item;
+package ru.practicum.shareit.item.model;
 
 import lombok.*;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.base.BaseModel;
 
 import javax.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "items")
@@ -18,6 +20,7 @@ public class Item extends BaseModel<Long> {
     @Column(name = "available")
     private Boolean available;
     private User owner;
+    private Set<Comment> comments = new HashSet<>();
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,5 +38,13 @@ public class Item extends BaseModel<Long> {
     @JoinColumn(name="owner_id")
     public User getOwner() {
         return owner;
+    }
+    @OneToMany(mappedBy = "item")
+    public Set<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(Set<Comment> comments) {
+        this.comments = comments;
     }
 }
