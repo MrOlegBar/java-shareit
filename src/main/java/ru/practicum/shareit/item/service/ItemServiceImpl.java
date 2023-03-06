@@ -51,7 +51,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto getItemDtoByItemId(long userId, long itemId) throws ItemNotFoundException {
-        ItemDto itemDto = ItemMapper.toItemDtoForGet(getItemById(itemId));
+        ItemDto itemDto = ItemMapper.toItemDto(getItemById(itemId));
 
         if (itemRepository.findItemByOwner_IdAndId(userId, itemId).isPresent()) {
             setBookingsToItemDto(itemDto);
@@ -64,7 +64,7 @@ public class ItemServiceImpl implements ItemService {
         Collection<Item> items = itemRepository.findAllByOwner_Id(userId);
 
         return items.stream()
-                .map(ItemMapper::toItemDtoForGet)
+                .map(ItemMapper::toItemDto)
                 .peek(this::setBookingsToItemDto)
                 .collect(Collectors.toList());
     }
@@ -109,8 +109,8 @@ public class ItemServiceImpl implements ItemService {
                             BookingStatus.APPROVED, dateTimeNow).get()));
 
         }
-        if (bookingRepository.findFirstByItem_IdAndStatusAndStartDateIsAfterOrderByStartDateAsc(itemDto.getId()
-                , BookingStatus.APPROVED, dateTimeNow).isPresent()) {
+        if (bookingRepository.findFirstByItem_IdAndStatusAndStartDateIsAfterOrderByStartDateAsc(itemDto.getId(),
+                BookingStatus.APPROVED, dateTimeNow).isPresent()) {
 
             itemDto.setNextBooking(BookingMapper.toShortBookingDto(bookingRepository
                     .findFirstByItem_IdAndStatusAndStartDateIsAfterOrderByStartDateAsc(itemDto.getId(),

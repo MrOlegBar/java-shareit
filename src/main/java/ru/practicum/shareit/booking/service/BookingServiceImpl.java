@@ -54,7 +54,7 @@ public class BookingServiceImpl implements BookingService {
                         startDateDescSort);
                 break;
             case CURRENT:
-                bookings = bookingRepository.findAllByBooker_IdAndStartDateIsBeforeAndEndDateIsAfter(bookerId, LocalDateTime.now());
+                bookings = bookingRepository.findAllByBooker_IdAndDateTimeNowBetweenStartDateAndEndDate(bookerId, LocalDateTime.now());
                 break;
         }
         return bookings;
@@ -83,7 +83,7 @@ public class BookingServiceImpl implements BookingService {
                         startDateDescSort);
                 break;
             case CURRENT:
-                bookings = bookingRepository.findAllByItem_Owner_IdAndStartDateIsBeforeAndEndDateIsAfter(ownerId,
+                bookings = bookingRepository.findAllByItem_Owner_IdAndDateTimeNowBetweenStartDateAndEndDate(ownerId,
                         LocalDateTime.now());
                 break;
         }
