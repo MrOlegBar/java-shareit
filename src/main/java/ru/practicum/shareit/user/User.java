@@ -1,23 +1,32 @@
 package ru.practicum.shareit.user;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
+import ru.practicum.shareit.base.BaseModel;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotNull;
-import java.util.Set;
+import javax.persistence.*;
 
-@Data
-@Builder
-public class User {
-    private Long id;
-    private String name;
-    @NotNull(message = "Электронная почта отсутствует.")
-    @Email(message = "Email не соответствует формату электронной почты.")
+@Entity
+@Table(name = "users",
+        uniqueConstraints = @UniqueConstraint(name = "unique_email", columnNames = "email"))
+@NoArgsConstructor
+@Setter
+@Getter
+@ToString
+public class User extends BaseModel<Long> {
+    @Column(name = "email")
     private String email;
+    @Column(name = "name")
+    private String name;
 
-    private Set<Long> itemsId;
-    private Set<Long> reviewId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    @Override
+    public Long getId() {
+        return id;
+    }
 
-    public static Long ids = 0L;
+    public void setId(Long id) {
+        this.id = id;
+    }
 }
