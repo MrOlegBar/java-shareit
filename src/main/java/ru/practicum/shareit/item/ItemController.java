@@ -6,9 +6,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.exception.BookingBadRequestException;
-import ru.practicum.shareit.booking.model.BookingState;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.service.BookingService;
+import ru.practicum.shareit.error.MethodParametersException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.mapper.CommentMapper;
 import ru.practicum.shareit.constraintGroup.Post;
@@ -18,13 +18,15 @@ import ru.practicum.shareit.item.dto.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
+import ru.practicum.shareit.request.Request;
+import ru.practicum.shareit.request.service.RequestService;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.user.service.UserService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -34,14 +36,17 @@ public class ItemController {
     private final ItemService itemService;
     private final UserService userService;
     private final BookingService bookingService;
+    private final RequestService requestService;
 
     @Autowired
     public ItemController(@Qualifier("ItemServiceImpl") ItemService itemService,
                           @Qualifier("UserServiceImpl") UserService userService,
-                          @Qualifier("BookingServiceImpl") BookingService bookingService) {
+                          @Qualifier("BookingServiceImpl") BookingService bookingService,
+                          @Qualifier("RequestServiceImpl") RequestService requestService) {
         this.itemService = itemService;
         this.userService = userService;
         this.bookingService = bookingService;
+        this.requestService = requestService;
     }
 
     @PostMapping("/items")
@@ -49,23 +54,37 @@ public class ItemController {
                                      @Validated(Post.class)
                                      @RequestBody LessShortItemDto lessShortItemDto) throws UserNotFoundException {
         User user = userService.getUserById(userId);
-
         Item itemFromDto = ItemMapper.toItem(lessShortItemDto);
+
+        if (lessShortItemDto.getRequestId() != null) {
+            Request request = requestService.getRequestById(lessShortItemDto.getRequestId());
+            itemFromDto.setRequest(request);
+        }
+
         itemFromDto.setOwner(user);
+
         Item itemForDto = itemService.create(itemFromDto);
-        return ItemMapper.toItemDtoForPostOrPut(itemForDto);
+        return ItemMapper.toLessShortItemDto(itemForDto);
     }
 
     @GetMapping(value = {"/items", "/items/{itemId}"})
     public Object getItemS(@RequestHeader("X-Sharer-User-Id") Long userId,
-                           @PathVariable(required = false) Long itemId) throws UserNotFoundException,
+                           @PathVariable(required = false) Long itemId,
+                           @RequestParam(required = false, defaultValue = "0") Integer from,
+                           @RequestParam(required = false, defaultValue = "10") Integer size)
+            throws UserNotFoundException,
             ItemNotFoundException {
+
         userService.getUserById(userId);
+        if (from < 0 || size <= 0) {
+            log.debug("Параметры запроса заданы не верно.");
+            throw new MethodParametersException("Параметры запроса заданы не верно.");
+        }
 
         if (itemId == null) {
-            return itemService.getAllItemsDtoByUserId(userId);
+            return itemService.getAllItemsDtoByOwnerId(userId, from, size);
         } else {
-            return itemService.getItemDtoByItemId(userId, itemId);
+            return itemService.getItemDtoByOwnerIdAndItemId(userId, itemId);
         }
     }
 
@@ -75,7 +94,7 @@ public class ItemController {
                                     @RequestBody LessShortItemDto lessShortItemDto,
                                     @PathVariable Long itemId) throws UserNotFoundException, ItemNotFoundException {
         User user = userService.getUserById(userId);
-        Item item = itemService.getItemById(itemId);
+        Item item = itemService.getItemByUserIdAndItemId(userId, itemId);
 
         if (lessShortItemDto.getName() != null) {
             item.setName(lessShortItemDto.getName());
@@ -89,17 +108,24 @@ public class ItemController {
         item.setOwner(user);
 
         Item itemForDto = itemService.update(item);
-        return ItemMapper.toItemDtoForPostOrPut(itemForDto);
+        return ItemMapper.toLessShortItemDto(itemForDto);
     }
 
     @GetMapping("/items/search")
-    public Collection<LessShortItemDto> findItemsBySearch(@RequestParam String text) {
+    public List<LessShortItemDto> findItemsBySearch(@RequestParam String text,
+                                                    @RequestParam(required = false, defaultValue = "0") Integer from,
+                                                    @RequestParam(required = false, defaultValue = "10") Integer size) {
+        if (from < 0 || size <= 0) {
+            log.debug("Параметры запроса заданы не верно.");
+            throw new MethodParametersException("Параметры запроса заданы не верно.");
+        }
+
         if (text.isEmpty()) {
             return new ArrayList<>();
         }
 
-        return itemService.findItemsBySearch(text).stream()
-                .map(ItemMapper::toItemDtoForPostOrPut)
+        return itemService.findItemsBySearch(text, from, size).stream()
+                .map(ItemMapper::toLessShortItemDto)
                 .collect(Collectors.toList());
     }
 
@@ -111,7 +137,7 @@ public class ItemController {
         User user = userService.getUserById(userId);
         Item item = itemService.getItemById(itemId);
 
-        if (bookingService.getAllBookingsByBookerId(userId, BookingState.ALL).stream()
+        if (bookingService.getAllBookingsByBookerId(userId).stream()
                 .noneMatch(booking -> Objects.equals(booking.getItem().getId(), itemId) && booking.getBooker().getId()
                         .equals(userId) && booking.getStatus().equals(BookingStatus.APPROVED) && booking.getEndDate()
                         .isBefore(LocalDateTime.now()))) {

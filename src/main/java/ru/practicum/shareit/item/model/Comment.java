@@ -1,6 +1,8 @@
 package ru.practicum.shareit.item.model;
 
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
 import ru.practicum.shareit.base.BaseModel;
 import ru.practicum.shareit.user.User;
 
@@ -16,8 +18,8 @@ public class Comment extends BaseModel<Long> {
     @Column(name = "text")
     private String text;
     private User author;
-    @Column(name = "created")
-    private LocalDateTime created;
+    @Column(name = "created", nullable = false, updatable = false)
+    private LocalDateTime created = LocalDateTime.now();
     private Item item;
 
     @Id

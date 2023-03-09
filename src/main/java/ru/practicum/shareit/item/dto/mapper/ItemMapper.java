@@ -11,12 +11,13 @@ import java.util.stream.Collectors;
 @Component
 public class ItemMapper {
 
-    public static LessShortItemDto toItemDtoForPostOrPut(Item item) {
+    public static LessShortItemDto toLessShortItemDto(Item item) {
         return LessShortItemDto.builder()
                 .id(item.getId())
                 .name(item.getName())
                 .description(item.getDescription())
                 .available(item.getAvailable())
+                .requestId(item.getRequest() != null ? item.getRequest().getId() : null)
                 .build();
     }
 

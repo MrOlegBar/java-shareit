@@ -19,4 +19,5 @@ public class LessShortItemDto {
     private String description;
     @NotNull(message = "Статус доступности вещи отсутствует.", groups = Post.class)
     private Boolean available;
+    private Long requestId;
 }

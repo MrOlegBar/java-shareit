@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.shareit.booking.exception.BookingBadRequestException;
 import ru.practicum.shareit.booking.exception.BookingNotFoundException;
 import ru.practicum.shareit.item.ItemNotFoundException;
+import ru.practicum.shareit.request.RequestNotFoundException;
 import ru.practicum.shareit.user.UserNotFoundException;
 
-import javax.servlet.ServletException;
 import java.sql.SQLException;
 import java.util.Objects;
 
@@ -32,7 +32,7 @@ public class ErrorHandler {
                 e.getHeaderName()));
     }
 
-    @ExceptionHandler(BookingBadRequestException.class)
+    @ExceptionHandler({BookingBadRequestException.class, MethodParametersException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleBadRequest(RuntimeException e) {
         return new ErrorResponse(e.getMessage());
@@ -40,17 +40,18 @@ public class ErrorHandler {
 
     @ExceptionHandler(ConversionFailedException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleConversionValidation(final RuntimeException e) {
+    public ErrorResponse handleConversionValidation() {
         return new ErrorResponse("Unknown state: UNSUPPORTED_STATUS");
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleRequestParamValidation(final ServletException e) {
+    public ErrorResponse handleRequestParamValidation() {
         return new ErrorResponse("Параметр запроса отсутствует.");
     }
 
-    @ExceptionHandler({UserNotFoundException.class, ItemNotFoundException.class, BookingNotFoundException.class})
+    @ExceptionHandler({UserNotFoundException.class, ItemNotFoundException.class, BookingNotFoundException.class,
+            RequestNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFound(RuntimeException e) {
         return new ErrorResponse(e.getMessage());

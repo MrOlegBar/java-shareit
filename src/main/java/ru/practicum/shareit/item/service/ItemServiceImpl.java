@@ -2,21 +2,22 @@ package ru.practicum.shareit.item.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.item.model.Comment;
-import ru.practicum.shareit.item.CommentRepository;
+import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.ItemNotFoundException;
-import ru.practicum.shareit.item.ItemRepository;
+import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.item.dto.mapper.ItemMapper;
 import ru.practicum.shareit.item.dto.ItemDto;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service("ItemServiceImpl")
@@ -50,7 +51,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDto getItemDtoByItemId(long userId, long itemId) throws ItemNotFoundException {
+    public ItemDto getItemDtoByOwnerIdAndItemId(long userId, long itemId) throws ItemNotFoundException {
         ItemDto itemDto = ItemMapper.toItemDto(getItemById(itemId));
 
         if (itemRepository.findItemByOwner_IdAndId(userId, itemId).isPresent()) {
@@ -60,8 +61,8 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Collection<ItemDto> getAllItemsDtoByUserId(long userId) {
-        Collection<Item> items = itemRepository.findAllByOwner_Id(userId);
+    public List<ItemDto> getAllItemsDtoByOwnerId(long userId, int from, int size) {
+        List<Item> items = itemRepository.findAllByOwner_Id(userId, PageRequest.of(from, size));
 
         return items.stream()
                 .map(ItemMapper::toItemDto)
@@ -84,13 +85,10 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Collection<Item> findItemsBySearch(String text) {
+    public List<Item> findItemsBySearch(String text, int from, int size) {
         String lowercaseText = text.toLowerCase();
-        return itemRepository.findAll().stream()
-                .filter(savedItem -> (savedItem.getAvailable())
-                        && (savedItem.getName().toLowerCase().contains(lowercaseText)
-                        || savedItem.getDescription().toLowerCase().contains(lowercaseText)))
-                .collect(Collectors.toList());
+
+        return itemRepository.findItemsBySearch(lowercaseText, PageRequest.of(from, size));
     }
 
     @Override

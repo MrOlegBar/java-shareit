@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.model;
 
 import lombok.*;
+import ru.practicum.shareit.request.Request;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.base.BaseModel;
 
@@ -23,6 +24,7 @@ public class Item extends BaseModel<Long> {
     private Boolean available;
     private User owner;
     private Set<Comment> comments = new HashSet<>();
+    private Request request;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,5 +51,15 @@ public class Item extends BaseModel<Long> {
 
     public void setComments(Set<Comment> comments) {
         this.comments = comments;
+    }
+
+    @ManyToOne
+    @JoinColumn(name = "request_id")
+    public Request getRequest() {
+        return request;
+    }
+
+    public void setRequest(Request request) {
+        this.request = request;
     }
 }
