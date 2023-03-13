@@ -99,11 +99,11 @@ public class ItemServiceImpl implements ItemService {
     private void setBookingsToItemDto(ItemDto itemDto) {
         LocalDateTime dateTimeNow = LocalDateTime.now();
 
-        if (bookingRepository.findFirstByItem_IdAndStatusAndEndDateIsBeforeOrderByEndDateAsc(itemDto.getId(),
+        if (bookingRepository.findFirstByItem_IdAndStatusAndStartDateIsBeforeOrderByEndDateDesc(itemDto.getId(),
                 BookingStatus.APPROVED, dateTimeNow).isPresent()) {
 
             itemDto.setLastBooking(BookingMapper.toShortBookingDto(bookingRepository
-                    .findFirstByItem_IdAndStatusAndEndDateIsBeforeOrderByEndDateAsc(itemDto.getId(),
+                    .findFirstByItem_IdAndStatusAndStartDateIsBeforeOrderByEndDateDesc(itemDto.getId(),
                             BookingStatus.APPROVED, dateTimeNow).get()));
 
         }

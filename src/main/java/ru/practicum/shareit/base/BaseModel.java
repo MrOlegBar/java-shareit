@@ -7,6 +7,10 @@ public abstract class BaseModel<T> {
     public BaseModel() {
     }
 
+    public BaseModel(T id) {
+        this.id = id;
+    }
+
     public T getId() {
         return this.id;
     }

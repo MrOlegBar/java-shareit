@@ -35,7 +35,6 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<Booking> getAllBookingsByBookerId(long bookerId, BookingState state, int from, int size) {
-
         switch (state) {
             case ALL:
                 bookings = bookingRepository.findAllByBooker_Id(bookerId,

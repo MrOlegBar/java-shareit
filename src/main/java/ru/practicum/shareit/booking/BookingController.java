@@ -23,7 +23,7 @@ import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.transaction.Transactional;
-import javax.validation.constraints.PositiveOrZero;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,12 +61,12 @@ public class BookingController {
             throw new BookingBadRequestException(String.format("Вещь с itemId = %s не доступна для бронирования.",
                     bookingFromDto.getItem().getId()));
         }
-        if (bookingFromDto.getStartDate().isAfter(bookingFromDto.getEndDate())) {
-            log.debug("Дата начала бронирования: {} позже даты окончания бронирования: {}.",
-                    bookingFromDto.getStartDate(), bookingFromDto.getEndDate());
-            throw new BookingBadRequestException(String.format("Дата начала бронирования: %tF %tT позже даты окончания " +
-                            "бронирования: %tF %tT.", bookingFromDto.getStartDate(), bookingFromDto.getStartDate(),
-                    bookingFromDto.getEndDate(), bookingFromDto.getEndDate()));
+        if (bookingFromDto.getStartDate().isAfter(bookingFromDto.getEndDate()) ||
+                bookingFromDto.getStartDate().equals(bookingFromDto.getEndDate()) ||
+                bookingFromDto.getStartDate().isBefore(LocalDateTime.now())) {
+            log.debug("Дата начала бронирования должна быть раньше даты окончания бронирования.");
+            throw new BookingBadRequestException("Дата начала бронирования должна быть раньше " +
+                    "даты окончания бронирования.");
         }
         User booker = userService.getUserById(userId);
 

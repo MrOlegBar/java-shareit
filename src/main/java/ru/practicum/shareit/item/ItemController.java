@@ -90,11 +90,10 @@ public class ItemController {
 
     @PatchMapping("/items/{itemId}")
     public LessShortItemDto putItem(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                    @Validated(Put.class)
-                                    @RequestBody LessShortItemDto lessShortItemDto,
+                                    @Validated(Put.class) @RequestBody LessShortItemDto lessShortItemDto,
                                     @PathVariable Long itemId) throws UserNotFoundException, ItemNotFoundException {
         User user = userService.getUserById(userId);
-        Item item = itemService.getItemByUserIdAndItemId(userId, itemId);
+        Item item = itemService.getItemById(itemId);
 
         if (lessShortItemDto.getName() != null) {
             item.setName(lessShortItemDto.getName());

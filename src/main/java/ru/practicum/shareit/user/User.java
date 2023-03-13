@@ -18,6 +18,12 @@ public class User extends BaseModel<Long> {
     @Column(name = "name")
     private String name;
 
+    public User(Long id, String email, String name) {
+        super(id);
+        this.email = email;
+        this.name = name;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
