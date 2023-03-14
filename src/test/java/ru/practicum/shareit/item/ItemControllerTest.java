@@ -10,6 +10,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.booking.dto.ShortBookingDto;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -60,15 +62,15 @@ public class ItemControllerTest {
             "user@user.com",
             "user");
     private final Request request = new Request();
-    private Item itemForDto;
-    private ItemDto itemDtoResponse;
-    private LessShortItemDto lessShortItemDtoResponse;
-    private final LessShortItemDto itemDtoRequest = LessShortItemDto.builder()
+    private final LessShortItemDto lessShortItemDtoRequest = LessShortItemDto.builder()
             .name("Дрель")
             .description("Простая дрель")
             .available(true)
             .requestId(1L)
             .build();
+    private Item itemForDto;
+    private ItemDto itemDtoResponse;
+    private LessShortItemDto lessShortItemDtoResponse;
     private final ShortBookingDto lastBooking = ShortBookingDto.builder()
             .id(1L)
             .bookerId(1L)
@@ -79,14 +81,18 @@ public class ItemControllerTest {
             .build();
     private final Comment comment = new Comment();
     private CommentDto commentDto;
+    private final Booking booking = new Booking();
+    private final List<Item> items = new ArrayList<>();
     private final List<ItemDto> itemsDtoResponse = new ArrayList<>();
+    private final List<LessShortItemDto> lessShortItemsDtoResponse = new ArrayList<>();
+    private final List<Booking> bookings = new ArrayList<>();
     private final Set<CommentDto> comments = new HashSet<>();
 
     @BeforeEach
     void setUp() {
         request.setId(1L);
 
-        itemForDto = ItemMapper.toItem(itemDtoRequest);
+        itemForDto = ItemMapper.toItem(lessShortItemDtoRequest);
         itemForDto.setId(1L);
         itemForDto.setOwner(user);
         itemForDto.setRequest(request);
@@ -105,6 +111,16 @@ public class ItemControllerTest {
         itemDtoResponse.setComments(comments);
 
         itemsDtoResponse.add(itemDtoResponse);
+
+        items.add(itemForDto);
+
+        booking.setItem(itemForDto);
+        booking.setBooker(user);
+        booking.setStatus(BookingStatus.APPROVED);
+        booking.setStartDate(LocalDateTime.now().minusDays(2L));
+        booking.setEndDate(LocalDateTime.now().minusDays(1L));
+
+        bookings.add(booking);
     }
 
     @Test
@@ -168,6 +184,7 @@ public class ItemControllerTest {
 
     @Test
     void shouldReturnItemDtoById() throws Exception {
+
         when(userService.getUserById(anyLong()))
                 .thenReturn(user);
         when(itemService.getItemDtoByOwnerIdAndItemId(anyLong(), anyLong()))
@@ -188,6 +205,7 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$.lastBooking.bookerId", is(itemDtoResponse.getLastBooking().getBookerId()), Long.class))
                 .andExpect(jsonPath("$.nextBooking.id", is(itemDtoResponse.getNextBooking().getId()), Long.class))
                 .andExpect(jsonPath("$.nextBooking.bookerId", is(itemDtoResponse.getNextBooking().getBookerId()), Long.class))
+                .andExpect(jsonPath("$.comments", hasSize(1)))
                 .andExpect(jsonPath("$.comments[0].id", is(commentDto.getId()), Long.class))
                 .andExpect(jsonPath("$.comments[0].text", is(commentDto.getText())))
                 .andExpect(jsonPath("$.comments[0].authorName", is(commentDto.getAuthorName())))
@@ -219,9 +237,59 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$[0].lastBooking.bookerId", is(itemDtoResponse.getLastBooking().getBookerId()), Long.class))
                 .andExpect(jsonPath("$[0].nextBooking.id", is(itemDtoResponse.getNextBooking().getId()), Long.class))
                 .andExpect(jsonPath("$[0].nextBooking.bookerId", is(itemDtoResponse.getNextBooking().getBookerId()), Long.class))
+                .andExpect(jsonPath("$[0].comments", hasSize(1)))
                 .andExpect(jsonPath("$[0].comments[0].id", is(commentDto.getId()), Long.class))
                 .andExpect(jsonPath("$[0].comments[0].text", is(commentDto.getText())))
                 .andExpect(jsonPath("$[0].comments[0].authorName", is(commentDto.getAuthorName())))
                 .andExpect(jsonPath("$[0].comments[0].created", is(commentDto.getCreated().toString())));
+    }
+
+    @Test
+    void shouldReturnAllLessShortItemDtoBySearch() throws Exception {
+        when(itemService.findItemsBySearch(anyString(), anyInt(), anyInt()))
+                .thenReturn(items);
+
+        lessShortItemDtoResponse = ItemMapper.toLessShortItemDto(itemForDto);
+        lessShortItemsDtoResponse.add(lessShortItemDtoResponse);
+
+        mockMvc.perform(get("/items/search")
+                        .param("text", "Дрель")
+                        .param("from", "0")
+                        .param("size", "10")
+                        .content(mapper.writeValueAsString(lessShortItemsDtoResponse))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id", is(lessShortItemDtoResponse.getId()), Long.class))
+                .andExpect(jsonPath("$[0].name", is(lessShortItemDtoResponse.getName())))
+                .andExpect(jsonPath("$[0].description", is(lessShortItemDtoResponse.getDescription())))
+                .andExpect(jsonPath("$[0].available", is(lessShortItemDtoResponse.getAvailable())))
+                .andExpect(jsonPath("$[0].requestId", is(lessShortItemDtoResponse.getRequestId()), Long.class));
+    }
+
+    @Test
+    void shouldReturnCommentDto() throws Exception {
+        when(userService.getUserById(anyLong()))
+                .thenReturn(user);
+        when(itemService.getItemById(anyLong()))
+                .thenReturn(itemForDto);
+        when(bookingService.getAllBookingsByBookerId(anyLong()))
+                .thenReturn(bookings);
+        when(itemService.createComment(any()))
+                .thenReturn(comment);
+
+        mockMvc.perform(post("/items/{itemId}/comment", 1L)
+                        .header("X-Sharer-User-Id", 1L)
+                        .content(mapper.writeValueAsString(commentDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(commentDto.getId()), Long.class))
+                .andExpect(jsonPath("$.text", is(commentDto.getText())))
+                .andExpect(jsonPath("$.authorName", is(commentDto.getAuthorName())))
+                .andExpect(jsonPath("$.created", is(commentDto.getCreated().toString())));
     }
 }

@@ -20,4 +20,15 @@ public class LessShortItemDto {
     @NotNull(message = "Статус доступности вещи отсутствует.", groups = Post.class)
     private Boolean available;
     private Long requestId;
+
+    @Override
+    public String toString() {
+        return "LessShortItemDto{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", available=" + available +
+                ", requestId=" + requestId +
+                '}';
+    }
 }

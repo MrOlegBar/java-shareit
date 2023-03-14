@@ -1,8 +1,7 @@
 package ru.practicum.shareit.request;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.constraintGroup.Post;
@@ -19,17 +18,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
+@RequiredArgsConstructor
 @Slf4j
 public class RequestController {
     private final RequestService requestService;
     private final UserService userService;
-
-    @Autowired
-    public RequestController(@Qualifier("RequestServiceImpl") RequestService requestService,
-                             @Qualifier("UserServiceImpl") UserService userService) {
-        this.requestService = requestService;
-        this.userService = userService;
-    }
 
     @PostMapping("/requests")
     public RequestDto postItem(@RequestHeader("X-Sharer-User-Id") Long userId,

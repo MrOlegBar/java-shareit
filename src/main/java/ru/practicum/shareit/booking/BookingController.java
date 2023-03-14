@@ -1,8 +1,7 @@
 package ru.practicum.shareit.booking;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingMapper;
@@ -28,20 +27,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
+@RequiredArgsConstructor
 @Slf4j
 public class BookingController {
     private final UserService userService;
     private final BookingService bookingService;
     private final ItemService itemService;
-
-    @Autowired
-    public BookingController(@Qualifier("UserServiceImpl") UserService userService,
-                             @Qualifier("BookingServiceImpl") BookingService bookingService,
-                             @Qualifier("ItemServiceImpl") ItemService itemService) {
-        this.userService = userService;
-        this.bookingService = bookingService;
-        this.itemService = itemService;
-    }
 
     @PostMapping("/bookings")
     public BookingDto postBooking(@RequestHeader("X-Sharer-User-Id") Long userId,
@@ -77,7 +68,7 @@ public class BookingController {
         return BookingMapper.toBookingDto(bookingForDto);
     }
 
-    @GetMapping(value = {"/bookings/{bookingId}"})
+    @GetMapping("/bookings/{bookingId}")
     public BookingDto getBookingsById(@RequestHeader("X-Sharer-User-Id") Long userId,
                                       @PathVariable Long bookingId) throws UserNotFoundException,
             BookingNotFoundException {
@@ -95,7 +86,7 @@ public class BookingController {
         }
     }
 
-    @GetMapping(value = {"/bookings"})
+    @GetMapping("/bookings")
     public List<BookingDto> getBookings(@RequestHeader("X-Sharer-User-Id") Long userId,
                                         @RequestParam(required = false, defaultValue = "ALL") BookingState state,
                                         @RequestParam(required = false, defaultValue = "0") Integer from,
@@ -113,7 +104,7 @@ public class BookingController {
                 .collect(Collectors.toList());
     }
 
-    @GetMapping(value = {"/bookings/owner"})
+    @GetMapping("/bookings/owner")
     public List<BookingDto> getBookingsOwner(@RequestHeader("X-Sharer-User-Id") Long userId,
                                              @RequestParam(required = false,
                                                      defaultValue = "ALL") BookingState state,
