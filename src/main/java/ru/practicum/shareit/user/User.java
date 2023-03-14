@@ -11,7 +11,6 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Setter
 @Getter
-@ToString
 public class User extends BaseModel<Long> {
     @Column(name = "email")
     private String email;
@@ -34,5 +33,14 @@ public class User extends BaseModel<Long> {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id='" + id + '\'' +
+                ", email='" + email + '\'' +
+                ", name=" + name +
+                '}';
     }
 }

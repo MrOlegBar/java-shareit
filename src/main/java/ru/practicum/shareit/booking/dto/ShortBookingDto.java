@@ -10,4 +10,12 @@ import lombok.Setter;
 public class ShortBookingDto {
     private Long id;
     private Long bookerId;
+
+    @Override
+    public String toString() {
+        return "ShortBookingDto{" +
+                "id=" + id +
+                ", bookerId=" + bookerId +
+                '}';
+    }
 }

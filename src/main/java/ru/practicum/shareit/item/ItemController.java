@@ -1,8 +1,7 @@
 package ru.practicum.shareit.item;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.exception.BookingBadRequestException;
@@ -10,6 +9,7 @@ import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.error.MethodParametersException;
 import ru.practicum.shareit.item.dto.CommentDto;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.mapper.CommentMapper;
 import ru.practicum.shareit.constraintGroup.Post;
 import ru.practicum.shareit.constraintGroup.Put;
@@ -26,28 +26,19 @@ import ru.practicum.shareit.user.service.UserService;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RestController
+@RequiredArgsConstructor
 @Slf4j
 public class ItemController {
     private final ItemService itemService;
     private final UserService userService;
     private final BookingService bookingService;
     private final RequestService requestService;
-
-    @Autowired
-    public ItemController(@Qualifier("ItemServiceImpl") ItemService itemService,
-                          @Qualifier("UserServiceImpl") UserService userService,
-                          @Qualifier("BookingServiceImpl") BookingService bookingService,
-                          @Qualifier("RequestServiceImpl") RequestService requestService) {
-        this.itemService = itemService;
-        this.userService = userService;
-        this.bookingService = bookingService;
-        this.requestService = requestService;
-    }
 
     @PostMapping("/items")
     public LessShortItemDto postItem(@RequestHeader("X-Sharer-User-Id") Long userId,
@@ -67,11 +58,21 @@ public class ItemController {
         return ItemMapper.toLessShortItemDto(itemForDto);
     }
 
-    @GetMapping(value = {"/items", "/items/{itemId}"})
-    public Object getItemS(@RequestHeader("X-Sharer-User-Id") Long userId,
-                           @PathVariable(required = false) Long itemId,
-                           @RequestParam(required = false, defaultValue = "0") Integer from,
-                           @RequestParam(required = false, defaultValue = "10") Integer size)
+    @GetMapping("/items/{itemId}")
+    public ItemDto getItemById(@RequestHeader("X-Sharer-User-Id") Long userId,
+                               @PathVariable(required = false) Long itemId)
+            throws UserNotFoundException,
+            ItemNotFoundException {
+
+        userService.getUserById(userId);
+
+        return itemService.getItemDtoByOwnerIdAndItemId(userId, itemId);
+    }
+
+    @GetMapping("/items")
+    public Collection<ItemDto> getItems(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                        @RequestParam(required = false, defaultValue = "0") Integer from,
+                                        @RequestParam(required = false, defaultValue = "10") Integer size)
             throws UserNotFoundException,
             ItemNotFoundException {
 
@@ -81,11 +82,7 @@ public class ItemController {
             throw new MethodParametersException("Параметры запроса заданы не верно.");
         }
 
-        if (itemId == null) {
-            return itemService.getAllItemsDtoByOwnerId(userId, from, size);
-        } else {
-            return itemService.getItemDtoByOwnerIdAndItemId(userId, itemId);
-        }
+        return itemService.getAllItemsDtoByOwnerId(userId, from, size);
     }
 
     @PatchMapping("/items/{itemId}")
@@ -104,6 +101,11 @@ public class ItemController {
         if (lessShortItemDto.getAvailable() != null) {
             item.setAvailable(lessShortItemDto.getAvailable());
         }
+        if (lessShortItemDto.getRequestId() != null) {
+            Request request = requestService.getRequestById(lessShortItemDto.getRequestId());
+            item.setRequest(request);
+        }
+
         item.setOwner(user);
 
         Item itemForDto = itemService.update(item);

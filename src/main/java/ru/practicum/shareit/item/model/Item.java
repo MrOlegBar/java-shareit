@@ -13,7 +13,6 @@ import java.util.Set;
 @Table(name = "items")
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 public class Item extends BaseModel<Long> {
     @Column(name = "name")
@@ -61,5 +60,18 @@ public class Item extends BaseModel<Long> {
 
     public void setRequest(Request request) {
         this.request = request;
+    }
+
+    @Override
+    public String toString() {
+        return "Item{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", available=" + available +
+                ", owner=" + owner +
+                ", comments=" + comments +
+                ", request=" + request +
+                '}';
     }
 }

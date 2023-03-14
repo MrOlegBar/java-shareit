@@ -24,4 +24,17 @@ public class ItemDto {
     private ShortBookingDto lastBooking;
     private ShortBookingDto nextBooking;
     private Set<CommentDto> comments;
+
+    @Override
+    public String toString() {
+        return "ItemDto{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", available=" + available +
+                ", lastBooking=" + lastBooking +
+                ", nextBooking=" + nextBooking +
+                ", comments=" + comments +
+                '}';
+    }
 }
