@@ -18,4 +18,27 @@ public class ShortBookingDto {
                 ", bookerId=" + bookerId +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null) {
+            return false;
+        } else if (this == o) {
+            return true;
+        } else if (!(o instanceof ShortBookingDto)) {
+            return false;
+        } else {
+            ShortBookingDto bookingDto = (ShortBookingDto) o;
+            if (!bookingDto.getClass().equals(this.getClass())) {
+                return false;
+            } else {
+                return this.id != null && this.id.equals(bookingDto.id);
+            }
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return this.id != null ? this.id.hashCode() : 0;
+    }
 }

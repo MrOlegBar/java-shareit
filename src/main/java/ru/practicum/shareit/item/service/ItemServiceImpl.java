@@ -42,11 +42,25 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    public Item update(Item item) {
+        return itemRepository.save(item);
+    }
+
+    @Override
     public Item getItemById(long itemId) throws ItemNotFoundException {
         return itemRepository.findById(itemId).orElseThrow(() -> {
             log.debug("Вещь с itemId  = {} не найдена.", itemId);
             throw new ItemNotFoundException(String.format("Вещь с itemId = %s не найдена.",
                     itemId));
+        });
+    }
+
+    @Override
+    public Item getItemByUserIdAndItemId(long userId, long itemId) throws ItemNotFoundException {
+        return itemRepository.findItemByOwner_IdAndId(userId, itemId).orElseThrow(() -> {
+            log.debug("Вещь с itemId  = {} у пользователя с userId = {} не найдена.", itemId, userId);
+            throw new ItemNotFoundException(String.format("Вещь с itemId = %s у пользователя с userId = %s не найдена.",
+                    itemId, userId));
         });
     }
 
@@ -68,20 +82,6 @@ public class ItemServiceImpl implements ItemService {
                 .map(ItemMapper::toItemDto)
                 .peek(this::setBookingsToItemDto)
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public Item getItemByUserIdAndItemId(long userId, long itemId) throws ItemNotFoundException {
-        return itemRepository.findItemByOwner_IdAndId(userId, itemId).orElseThrow(() -> {
-            log.debug("Вещь с itemId  = {} у пользователя с userId = {} не найдена.", itemId, userId);
-            throw new ItemNotFoundException(String.format("Вещь с itemId = %s у пользователя с userId = %s не найдена.",
-                    itemId, userId));
-        });
-    }
-
-    @Override
-    public Item update(Item item) {
-        return itemRepository.save(item);
     }
 
     @Override

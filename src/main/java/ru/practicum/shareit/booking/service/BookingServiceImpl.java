@@ -34,6 +34,25 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
+    public Booking update(Booking booking) {
+        return bookingRepository.save(booking);
+    }
+
+    @Override
+    public Booking getBookingById(long bookingId) throws BookingNotFoundException {
+        return bookingRepository.findById(bookingId).orElseThrow(() -> {
+            log.debug("Бронирование с bookingId  = {} не найдено.", bookingId);
+            throw new BookingNotFoundException(String.format("Бронирование с bookingId = %s не найдено.",
+                    bookingId));
+        });
+    }
+
+    @Override
+    public List<Booking> getAllBookingsByBookerId(long bookerId) {
+        return bookingRepository.findAllByBooker_Id(bookerId, startDateDescSort);
+    }
+
+    @Override
     public List<Booking> getAllBookingsByBookerId(long bookerId, BookingState state, int from, int size) {
         switch (state) {
             case ALL:
@@ -65,11 +84,6 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<Booking> getAllBookingsByBookerId(long bookerId) {
-        return bookingRepository.findAllByBooker_Id(bookerId, startDateDescSort);
-    }
-
-    @Override
     public List<Booking> getAllBookingsByOwnerId(long ownerId, BookingState state, int from, int size) {
         switch (state) {
             case ALL:
@@ -98,19 +112,5 @@ public class BookingServiceImpl implements BookingService {
                 break;
         }
         return (List<Booking>) bookings;
-    }
-
-    @Override
-    public Booking getBookingById(long bookingId) throws BookingNotFoundException {
-        return bookingRepository.findById(bookingId).orElseThrow(() -> {
-            log.debug("Бронирование с bookingId  = {} не найдено.", bookingId);
-            throw new BookingNotFoundException(String.format("Бронирование с bookingId = %s не найдено.",
-                    bookingId));
-        });
-    }
-
-    @Override
-    public Booking update(Booking booking) {
-        return bookingRepository.save(booking);
     }
 }

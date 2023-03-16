@@ -28,6 +28,15 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
+    public Request getRequestById(long requestId) {
+        return requestRepository.findById(requestId).orElseThrow(() -> {
+            log.debug("Запрос с requestId  = {} не найден.", requestId);
+            throw new RequestNotFoundException(String.format("Запрос с requestId = %s не найден.",
+                    requestId));
+        });
+    }
+
+    @Override
     public Collection<Request> getAllRequestsByUserId(long userId) {
         return requestRepository.findAllByRequester_Id(userId);
     }
@@ -36,14 +45,5 @@ public class RequestServiceImpl implements RequestService {
     public List<Request> getAllItemRequests(long userId, int from, int size) {
         return requestRepository.findAllByRequester_Id(userId, PageRequest.of(from, size,
                 Sort.Direction.DESC, "created"));
-    }
-
-    @Override
-    public Request getRequestById(long requestId) {
-        return requestRepository.findById(requestId).orElseThrow(() -> {
-            log.debug("Запрос с requestId  = {} не найден.", requestId);
-            throw new RequestNotFoundException(String.format("Запрос с requestId = %s не найден.",
-                    requestId));
-        });
     }
 }

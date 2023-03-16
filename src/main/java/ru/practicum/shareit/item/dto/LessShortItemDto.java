@@ -31,4 +31,27 @@ public class LessShortItemDto {
                 ", requestId=" + requestId +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null) {
+            return false;
+        } else if (this == o) {
+            return true;
+        } else if (!(o instanceof LessShortItemDto)) {
+            return false;
+        } else {
+            LessShortItemDto lessShortItemDto = (LessShortItemDto) o;
+            if (!lessShortItemDto.getClass().equals(this.getClass())) {
+                return false;
+            } else {
+                return this.id != null && this.id.equals(lessShortItemDto.id);
+            }
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return this.id != null ? this.id.hashCode() : 0;
+    }
 }

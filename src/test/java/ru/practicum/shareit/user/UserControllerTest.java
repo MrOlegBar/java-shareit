@@ -11,7 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.service.UserServiceImpl;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(UserController.class)
 class UserControllerTest {
     @MockBean
-    private UserService userService;
+    private UserServiceImpl userService;
     @Autowired
     private MockMvc mockMvc;
     @Autowired

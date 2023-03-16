@@ -1,6 +1,5 @@
 package ru.practicum.shareit.item.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,5 +26,28 @@ public class CommentDto {
                 ", authorName='" + authorName + '\'' +
                 ", created=" + created +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null) {
+            return false;
+        } else if (this == o) {
+            return true;
+        } else if (!(o instanceof CommentDto)) {
+            return false;
+        } else {
+            CommentDto commentDto = (CommentDto) o;
+            if (!commentDto.getClass().equals(this.getClass())) {
+                return false;
+            } else {
+                return this.id != null && this.id.equals(commentDto.id);
+            }
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return this.id != null ? this.id.hashCode() : 0;
     }
 }

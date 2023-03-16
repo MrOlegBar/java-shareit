@@ -14,6 +14,7 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class Item extends BaseModel<Long> {
     @Column(name = "name")
     private String name;
@@ -22,8 +23,19 @@ public class Item extends BaseModel<Long> {
     @Column(name = "available")
     private Boolean available;
     private User owner;
-    private Set<Comment> comments = new HashSet<>();
     private Request request;
+    private Set<Comment> comments = new HashSet<>();
+
+    public Item(Long id, String name, String description, Boolean available, User owner, Request request,
+                Set<Comment> comments) {
+        super(id);
+        this.name = name;
+        this.description = description;
+        this.available = available;
+        this.owner = owner;
+        this.request = request;
+        this.comments = comments;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -2,11 +2,14 @@ package ru.practicum.shareit.booking.model;
 
 import lombok.*;
 import ru.practicum.shareit.base.BaseModel;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.Request;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Table(name = "bookings")
@@ -14,6 +17,7 @@ import java.time.LocalDateTime;
 @Setter
 @ToString
 @NoArgsConstructor
+@AllArgsConstructor
 public class Booking extends BaseModel<Long> {
     @Column(name = "start_date")
     private LocalDateTime startDate;
@@ -24,6 +28,16 @@ public class Booking extends BaseModel<Long> {
     private BookingStatus status;
     private Item item;
     private User booker;
+
+    public Booking(Long id, LocalDateTime startDate, LocalDateTime endDate, BookingStatus status, Item item,
+                   User booker) {
+        super(id);
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.status = status;
+        this.item = item;
+        this.booker = booker;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

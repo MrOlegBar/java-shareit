@@ -1,8 +1,6 @@
 package ru.practicum.shareit.request;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import ru.practicum.shareit.base.BaseModel;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
@@ -16,6 +14,7 @@ import java.util.Set;
 @Table(name = "requests")
 @Getter
 @Setter
+@NoArgsConstructor
 public class Request extends BaseModel<Long> {
     @Column(name = "description")
     private String description;
@@ -23,6 +22,19 @@ public class Request extends BaseModel<Long> {
     private LocalDateTime created = LocalDateTime.now();
     private User requester;
     private Set<Item> items = new HashSet<>();
+
+    public Request(Long id, String description, User requester, Set<Item> items) {
+        super(id);
+        this.description = description;
+        this.requester = requester;
+        this.items = items;
+    }
+
+    public Request(String description, User requester, Set<Item> items) {
+        this.description = description;
+        this.requester = requester;
+        this.items = items;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

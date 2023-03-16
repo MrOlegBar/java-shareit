@@ -22,7 +22,7 @@ import ru.practicum.shareit.request.Request;
 import ru.practicum.shareit.request.service.RequestService;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserNotFoundException;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.service.UserServiceImpl;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ItemController {
     private final ItemService itemService;
-    private final UserService userService;
+    private final UserServiceImpl userService;
     private final BookingService bookingService;
     private final RequestService requestService;
 

@@ -16,7 +16,7 @@ import ru.practicum.shareit.request.dto.RequestMapper;
 import ru.practicum.shareit.request.dto.ShortRequestDto;
 import ru.practicum.shareit.request.service.RequestService;
 import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.service.UserServiceImpl;
 
 import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
@@ -34,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(RequestController.class)
 public class RequestControllerTest {
     @MockBean
-    private UserService userService;
+    private UserServiceImpl userService;
 
     @MockBean
     private RequestService requestService;

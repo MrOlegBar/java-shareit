@@ -37,4 +37,27 @@ public class ItemDto {
                 ", comments=" + comments +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null) {
+            return false;
+        } else if (this == o) {
+            return true;
+        } else if (!(o instanceof ItemDto)) {
+            return false;
+        } else {
+            ItemDto itemDto = (ItemDto) o;
+            if (!itemDto.getClass().equals(this.getClass())) {
+                return false;
+            } else {
+                return this.id != null && this.id.equals(itemDto.id);
+            }
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return this.id != null ? this.id.hashCode() : 0;
+    }
 }

@@ -19,7 +19,7 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserNotFoundException;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.service.UserServiceImpl;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class BookingController {
-    private final UserService userService;
+    private final UserServiceImpl userService;
     private final BookingService bookingService;
     private final ItemService itemService;
 

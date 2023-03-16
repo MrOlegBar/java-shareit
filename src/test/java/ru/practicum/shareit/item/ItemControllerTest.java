@@ -3,15 +3,18 @@ package ru.practicum.shareit.item;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.booking.dto.ShortBookingDto;
+import ru.practicum.shareit.booking.exception.BookingNotFoundException;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.service.BookingService;
+import ru.practicum.shareit.error.MethodParametersException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.LessShortItemDto;
@@ -23,7 +26,7 @@ import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.request.Request;
 import ru.practicum.shareit.request.service.RequestService;
 import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.service.UserServiceImpl;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -32,6 +35,8 @@ import java.util.*;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -45,7 +50,7 @@ public class ItemControllerTest {
     @MockBean
     private ItemService itemService;
     @MockBean
-    private UserService userService;
+    private UserServiceImpl userService;
     @MockBean
     private BookingService bookingService;
     @MockBean
@@ -61,7 +66,7 @@ public class ItemControllerTest {
             "user@user.com",
             "user");
     private final Request request = new Request();
-    private Item itemForDto;
+    private Item itemForDto = new Item();
     private final LessShortItemDto lessShortItemDtoRequest = LessShortItemDto.builder()
             .name("Дрель")
             .description("Простая дрель")
@@ -247,6 +252,24 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$[0].comments[0].text", is(commentDtoForResponse.getText())))
                 .andExpect(jsonPath("$[0].comments[0].authorName", is(commentDtoForResponse.getAuthorName())))
                 .andExpect(jsonPath("$[0].comments[0].created", is(commentDtoForResponse.getCreated().format(formatter))));
+    }
+
+    @Test
+    void shouldReturnMethodParametersException() throws Exception {
+        Mockito.when(itemService.getAllItemsDtoByOwnerId(1L, -1, 10))
+                .thenThrow(new MethodParametersException("Параметры запроса заданы не верно."));
+
+        mockMvc.perform(get("/items")
+                        .header("X-Sharer-User-Id", 1L)
+                        .param("from", "-1")
+                        .param("size", "10")
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof MethodParametersException))
+                .andExpect(result -> assertEquals("Параметры запроса заданы не верно.",
+                        Objects.requireNonNull(result.getResolvedException()).getMessage()));
     }
 
     @Test

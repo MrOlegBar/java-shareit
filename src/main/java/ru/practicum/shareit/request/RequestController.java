@@ -12,7 +12,7 @@ import ru.practicum.shareit.request.dto.ShortRequestDto;
 import ru.practicum.shareit.request.service.RequestService;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserNotFoundException;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.service.UserServiceImpl;
 
 import java.util.Collection;
 import java.util.List;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class RequestController {
     private final RequestService requestService;
-    private final UserService userService;
+    private final UserServiceImpl userService;
 
     @PostMapping("/requests")
     public RequestDto postRequest(@RequestHeader("X-Sharer-User-Id") Long userId,

@@ -7,14 +7,14 @@ import ru.practicum.shareit.constraintGroup.Post;
 import ru.practicum.shareit.constraintGroup.Put;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.service.UserServiceImpl;
 
 import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
 public class UserController {
-    private final UserService userService;
+    private final UserServiceImpl userService;
 
     @PostMapping("/users")
     public UserDto postUser(@Validated(Post.class) @RequestBody UserDto userDto) {

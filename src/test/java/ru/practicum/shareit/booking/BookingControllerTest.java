@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingDtoForRequest;
 import ru.practicum.shareit.booking.dto.BookingMapper;
+import ru.practicum.shareit.booking.exception.BookingBadRequestException;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingState;
 import ru.practicum.shareit.booking.model.BookingStatus;
@@ -21,16 +22,19 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.request.Request;
 import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.service.UserServiceImpl;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -41,7 +45,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(BookingController.class)
 public class BookingControllerTest {
     @MockBean
-    private UserService userService;
+    private UserServiceImpl userService;
     @MockBean
     private BookingService bookingService;
     @MockBean
@@ -116,6 +120,25 @@ public class BookingControllerTest {
                 .andExpect(jsonPath("$.booker.id", is(bookingDtoForResponse.getBooker().getId()), Long.class))
                 .andExpect(jsonPath("$.item.id", is(bookingDtoForResponse.getItem().getId()), Long.class))
                 .andExpect(jsonPath("$.item.name", is(bookingDtoForResponse.getItem().getName())));
+    }
+
+    @Test
+    void shouldReturnBookingBadRequestException() throws Exception {
+        itemForDto.setAvailable(false);
+
+        when(itemService.getItemById(anyLong()))
+                .thenReturn(itemForDto);
+
+        mockMvc.perform(post("/bookings")
+                        .header("X-Sharer-User-Id", 1L)
+                        .content(mapper.writeValueAsString(bookingDtoForRequest))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof BookingBadRequestException))
+                .andExpect(result -> assertEquals("Вещь с itemId = 1 не доступна для бронирования.",
+                        Objects.requireNonNull(result.getResolvedException()).getMessage()));
     }
 
     @Test
