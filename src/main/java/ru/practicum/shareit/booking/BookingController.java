@@ -68,6 +68,33 @@ public class BookingController {
         return BookingMapper.toBookingDto(bookingForDto);
     }
 
+    @PatchMapping("/bookings/{bookingId}")
+    @Transactional
+    public BookingDto putBooking(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                 @PathVariable Long bookingId,
+                                 @RequestParam Boolean approved) {
+        userService.getUserById(userId);
+        Booking booking = bookingService.getBookingById(bookingId);
+
+        if (!userId.equals(booking.getItem().getOwner().getId())) {
+            log.debug("Подтверждение бронирования доступно только владельцу вещи.");
+            throw new BookingNotFoundException("Подтверждение бронирования доступно только владельцу вещи.");
+        }
+        if (approved && booking.getStatus().equals(BookingStatus.APPROVED)) {
+            log.debug("Статус бронирования уже подтвержден.");
+            throw new BookingBadRequestException("Статус бронирования уже подтвержден.");
+        }
+
+        if (approved) {
+            booking.setStatus(BookingStatus.APPROVED);
+        } else {
+            booking.setStatus(BookingStatus.REJECTED);
+        }
+
+        Booking bookingForDto = bookingService.update(booking);
+        return BookingMapper.toBookingDto(bookingForDto);
+    }
+
     @GetMapping("/bookings/{bookingId}")
     public BookingDto getBookingsById(@RequestHeader("X-Sharer-User-Id") Long userId,
                                       @PathVariable Long bookingId) throws UserNotFoundException,
@@ -121,32 +148,5 @@ public class BookingController {
         return bookingService.getAllBookingsByOwnerId(userId, state, from, size).stream()
                 .map(BookingMapper::toBookingDto)
                 .collect(Collectors.toList());
-    }
-
-    @PatchMapping("/bookings/{bookingId}")
-    @Transactional
-    public BookingDto putItem(@RequestHeader("X-Sharer-User-Id") Long userId,
-                              @PathVariable Long bookingId,
-                              @RequestParam Boolean approved) {
-        userService.getUserById(userId);
-        Booking booking = bookingService.getBookingById(bookingId);
-
-        if (!userId.equals(booking.getItem().getOwner().getId())) {
-            log.debug("Подтверждение бронирования доступно только владельцу вещи.");
-            throw new BookingNotFoundException("Подтверждение бронирования доступно только владельцу вещи.");
-        }
-        if (approved && booking.getStatus().equals(BookingStatus.APPROVED)) {
-            log.debug("Статус бронирования уже подтвержден.");
-            throw new BookingBadRequestException("Статус бронирования уже подтвержден.");
-        }
-
-        if (approved) {
-            booking.setStatus(BookingStatus.APPROVED);
-        } else {
-            booking.setStatus(BookingStatus.REJECTED);
-        }
-
-        Booking bookingForDto = bookingService.update(booking);
-        return BookingMapper.toBookingDto(bookingForDto);
     }
 }

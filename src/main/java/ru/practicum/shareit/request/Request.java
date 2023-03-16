@@ -16,7 +16,6 @@ import java.util.Set;
 @Table(name = "requests")
 @Getter
 @Setter
-@ToString
 public class Request extends BaseModel<Long> {
     @Column(name = "description")
     private String description;
@@ -54,5 +53,16 @@ public class Request extends BaseModel<Long> {
 
     public void setItems(Set<Item> items) {
         this.items = items;
+    }
+
+    @Override
+    public String toString() {
+        return "Request{" +
+                ", id=" + id +
+                ", description='" + description + '\'' +
+                ", created=" + created +
+                ", requester=" + requester +
+                ", items=" + items +
+                '}';
     }
 }

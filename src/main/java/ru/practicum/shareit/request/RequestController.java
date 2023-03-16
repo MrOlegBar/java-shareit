@@ -6,14 +6,15 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.constraintGroup.Post;
 import ru.practicum.shareit.error.MethodParametersException;
-import ru.practicum.shareit.item.ItemNotFoundException;
 import ru.practicum.shareit.request.dto.RequestDto;
 import ru.practicum.shareit.request.dto.RequestMapper;
+import ru.practicum.shareit.request.dto.ShortRequestDto;
 import ru.practicum.shareit.request.service.RequestService;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.user.service.UserService;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,32 +26,36 @@ public class RequestController {
     private final UserService userService;
 
     @PostMapping("/requests")
-    public RequestDto postItem(@RequestHeader("X-Sharer-User-Id") Long userId,
-                               @Validated(Post.class)
-                               @RequestBody RequestDto requestDto) throws UserNotFoundException {
+    public RequestDto postRequest(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                  @Validated(Post.class)
+                                  @RequestBody ShortRequestDto shortRequestDto) throws UserNotFoundException {
         User user = userService.getUserById(userId);
 
-        Request requestFromDto = RequestMapper.toRequest(requestDto);
+        Request requestFromDto = RequestMapper.toRequest(shortRequestDto);
         requestFromDto.setRequester(user);
         Request requestForDto = requestService.create(requestFromDto);
         return RequestMapper.toRequestDto(requestForDto);
     }
 
-    @GetMapping(value = {"/requests", "/requests/{requestId}"})
-    public Object getRequestS(@RequestHeader("X-Sharer-User-Id") Long userId,
-                              @PathVariable(required = false) Long requestId) throws UserNotFoundException,
-            ItemNotFoundException {
+    @GetMapping("/requests/{requestId}")
+    public RequestDto getRequestById(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                     @PathVariable Long requestId) throws UserNotFoundException,
+            RequestNotFoundException {
         userService.getUserById(userId);
 
-        if (requestId == null) {
-            return requestService.getAllRequestsByUserId(userId)
-                    .stream()
-                    .map(RequestMapper::toRequestDto)
-                    .collect(Collectors.toList());
-        } else {
-            Request requestToDto = requestService.getRequestById(requestId);
-            return RequestMapper.toRequestDto(requestToDto);
-        }
+        Request requestForDto = requestService.getRequestById(requestId);
+        return RequestMapper.toRequestDto(requestForDto);
+    }
+
+    @GetMapping("/requests")
+    public Collection<RequestDto> getRequests(@RequestHeader("X-Sharer-User-Id") Long userId)
+            throws UserNotFoundException {
+        userService.getUserById(userId);
+
+        return requestService.getAllRequestsByUserId(userId)
+                .stream()
+                .map(RequestMapper::toRequestDto)
+                .collect(Collectors.toList());
     }
 
     @GetMapping(value = {"/requests/all"})

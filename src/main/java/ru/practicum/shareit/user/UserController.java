@@ -23,18 +23,6 @@ public class UserController {
         return UserMapper.toUserDto(userForDto);
     }
 
-    @GetMapping(value = {"/users", "/users/{userId}"})
-    public Object getUserS(@PathVariable(required = false) Long userId) throws UserNotFoundException {
-        if (userId == null) {
-            return userService.getAllUsers().stream()
-                    .map(UserMapper::toUserDto)
-                    .collect(Collectors.toList());
-        } else {
-            User userForDto = userService.getUserById(userId);
-            return UserMapper.toUserDto(userForDto);
-        }
-    }
-
     @PatchMapping("/users/{userId}")
     public UserDto putUser(@PathVariable Long userId,
                            @Validated(Put.class)
@@ -50,6 +38,18 @@ public class UserController {
 
         User userForDto = userService.update(user);
         return UserMapper.toUserDto(userForDto);
+    }
+
+    @GetMapping(value = {"/users", "/users/{userId}"})
+    public Object getUserS(@PathVariable(required = false) Long userId) throws UserNotFoundException {
+        if (userId == null) {
+            return userService.getAllUsers().stream()
+                    .map(UserMapper::toUserDto)
+                    .collect(Collectors.toList());
+        } else {
+            User userForDto = userService.getUserById(userId);
+            return UserMapper.toUserDto(userForDto);
+        }
     }
 
     @DeleteMapping("/users/{userId}")

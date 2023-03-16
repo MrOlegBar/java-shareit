@@ -58,33 +58,6 @@ public class ItemController {
         return ItemMapper.toLessShortItemDto(itemForDto);
     }
 
-    @GetMapping("/items/{itemId}")
-    public ItemDto getItemById(@RequestHeader("X-Sharer-User-Id") Long userId,
-                               @PathVariable(required = false) Long itemId)
-            throws UserNotFoundException,
-            ItemNotFoundException {
-
-        userService.getUserById(userId);
-
-        return itemService.getItemDtoByOwnerIdAndItemId(userId, itemId);
-    }
-
-    @GetMapping("/items")
-    public Collection<ItemDto> getItems(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                        @RequestParam(required = false, defaultValue = "0") Integer from,
-                                        @RequestParam(required = false, defaultValue = "10") Integer size)
-            throws UserNotFoundException,
-            ItemNotFoundException {
-
-        userService.getUserById(userId);
-        if (from < 0 || size <= 0) {
-            log.debug("Параметры запроса заданы не верно.");
-            throw new MethodParametersException("Параметры запроса заданы не верно.");
-        }
-
-        return itemService.getAllItemsDtoByOwnerId(userId, from, size);
-    }
-
     @PatchMapping("/items/{itemId}")
     public LessShortItemDto putItem(@RequestHeader("X-Sharer-User-Id") Long userId,
                                     @Validated(Put.class) @RequestBody LessShortItemDto lessShortItemDto,
@@ -112,10 +85,37 @@ public class ItemController {
         return ItemMapper.toLessShortItemDto(itemForDto);
     }
 
+    @GetMapping("/items/{itemId}")
+    public ItemDto getItemById(@RequestHeader("X-Sharer-User-Id") Long userId,
+                               @PathVariable(required = false) Long itemId)
+            throws UserNotFoundException,
+            ItemNotFoundException {
+
+        userService.getUserById(userId);
+
+        return itemService.getItemDtoByOwnerIdAndItemId(userId, itemId);
+    }
+
+    @GetMapping("/items")
+    public Collection<ItemDto> getItems(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                        @RequestParam(required = false, defaultValue = "0") Integer from,
+                                        @RequestParam(required = false, defaultValue = "10") Integer size)
+            throws UserNotFoundException,
+            ItemNotFoundException {
+
+        userService.getUserById(userId);
+        if (from < 0 || size <= 0) {
+            log.debug("Параметры запроса заданы не верно.");
+            throw new MethodParametersException("Параметры запроса заданы не верно.");
+        }
+
+        return itemService.getAllItemsDtoByOwnerId(userId, from, size);
+    }
+
     @GetMapping("/items/search")
-    public List<LessShortItemDto> findItemsBySearch(@RequestParam String text,
-                                                    @RequestParam(required = false, defaultValue = "0") Integer from,
-                                                    @RequestParam(required = false, defaultValue = "10") Integer size) {
+    public List<LessShortItemDto> getItemsBySearch(@RequestParam String text,
+                                                   @RequestParam(required = false, defaultValue = "0") Integer from,
+                                                   @RequestParam(required = false, defaultValue = "10") Integer size) {
         if (from < 0 || size <= 0) {
             log.debug("Параметры запроса заданы не верно.");
             throw new MethodParametersException("Параметры запроса заданы не верно.");
@@ -152,7 +152,7 @@ public class ItemController {
         commentFromDto.setAuthor(user);
         commentFromDto.setItem(item);
 
-        Comment commentToDto = itemService.createComment(commentFromDto);
-        return CommentMapper.toCommentDto(commentToDto);
+        Comment commentForDto = itemService.createComment(commentFromDto);
+        return CommentMapper.toCommentDto(commentForDto);
     }
 }

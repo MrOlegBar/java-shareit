@@ -37,19 +37,21 @@ class UserControllerTest {
     ObjectMapper mapper;
 
     private User userForDto;
-    private UserDto userDtoResponse;
+    private final UserDto userDtoRequest = UserDto.builder()
+            .email("user@user.com")
+            .name("user")
+            .build();
+    private UserDto userDtoForResponse;
     private final List<User> usersForDto = new ArrayList<>();
-    private final List<UserDto> usersDtoResponse = new ArrayList<>();
 
     @BeforeEach
     void setUp() {
-        UserDto userDtoRequest = UserDto.builder()
-                .email("user@user.com")
-                .name("user")
-                .build();
-
         userForDto = UserMapper.toUser(userDtoRequest);
         userForDto.setId(1L);
+
+        usersForDto.add(userForDto);
+
+        userDtoForResponse = UserMapper.toUserDto(userForDto);
     }
 
     @Test
@@ -57,22 +59,23 @@ class UserControllerTest {
         when(userService.create(any()))
                 .thenReturn(userForDto);
 
-        userDtoResponse = UserMapper.toUserDto(userForDto);
-
         mockMvc.perform(post("/users")
-                        .content(mapper.writeValueAsString(userDtoResponse))
+                        .content(mapper.writeValueAsString(userDtoRequest))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(userDtoResponse.getId()), Long.class))
-                .andExpect(jsonPath("$.name", is(userDtoResponse.getName())))
-                .andExpect(jsonPath("$.email", is(userDtoResponse.getEmail())));
+                .andExpect(jsonPath("$.id", is(userDtoForResponse.getId()), Long.class))
+                .andExpect(jsonPath("$.name", is(userDtoForResponse.getName())))
+                .andExpect(jsonPath("$.email", is(userDtoForResponse.getEmail())));
 
     }
 
     @Test
     void shouldReturnPatchedUserDto() throws Exception {
+        userDtoRequest.setName("update");
+        userDtoRequest.setEmail("update@user.com");
+
         when(userService.getUserById(1L))
                 .thenReturn(userForDto);
 
@@ -82,17 +85,17 @@ class UserControllerTest {
         when(userService.update(any()))
                 .thenReturn(userForDto);
 
-        userDtoResponse = UserMapper.toUserDto(userForDto);
+        userDtoForResponse = UserMapper.toUserDto(userForDto);
 
         mockMvc.perform(patch("/users/{userId}", 1L)
-                        .content(mapper.writeValueAsString(userDtoResponse))
+                        .content(mapper.writeValueAsString(userDtoRequest))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(userDtoResponse.getId()), Long.class))
-                .andExpect(jsonPath("$.name", is(userDtoResponse.getName())))
-                .andExpect(jsonPath("$.email", is(userDtoResponse.getEmail())));
+                .andExpect(jsonPath("$.id", is(userDtoForResponse.getId()), Long.class))
+                .andExpect(jsonPath("$.name", is(userDtoForResponse.getName())))
+                .andExpect(jsonPath("$.email", is(userDtoForResponse.getEmail())));
 
     }
 
@@ -101,40 +104,31 @@ class UserControllerTest {
         when(userService.getUserById(anyLong()))
                 .thenReturn(userForDto);
 
-        userDtoResponse = UserMapper.toUserDto(userForDto);
-
         mockMvc.perform(get("/users/{userId}", 1L)
-                        .content(mapper.writeValueAsString(userDtoResponse))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(userDtoResponse.getId()), Long.class))
-                .andExpect(jsonPath("$.name", is(userDtoResponse.getName())))
-                .andExpect(jsonPath("$.email", is(userDtoResponse.getEmail())));
+                .andExpect(jsonPath("$.id", is(userDtoForResponse.getId()), Long.class))
+                .andExpect(jsonPath("$.name", is(userDtoForResponse.getName())))
+                .andExpect(jsonPath("$.email", is(userDtoForResponse.getEmail())));
 
     }
 
     @Test
     void shouldReturnAllUsersDto() throws Exception {
-        usersForDto.add(userForDto);
-
         when(userService.getAllUsers())
                 .thenReturn(usersForDto);
 
-        userDtoResponse = UserMapper.toUserDto(userForDto);
-        usersDtoResponse.add(userDtoResponse);
-
         mockMvc.perform(get("/users")
-                        .content(mapper.writeValueAsString(usersDtoResponse))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is(userDtoResponse.getId()), Long.class))
-                .andExpect(jsonPath("$[0].name", is(userDtoResponse.getName())))
-                .andExpect(jsonPath("$[0].email", is(userDtoResponse.getEmail())));
+                .andExpect(jsonPath("$[0].id", is(userDtoForResponse.getId()), Long.class))
+                .andExpect(jsonPath("$[0].name", is(userDtoForResponse.getName())))
+                .andExpect(jsonPath("$[0].email", is(userDtoForResponse.getEmail())));
 
     }
 
@@ -144,7 +138,6 @@ class UserControllerTest {
                 .thenReturn(true);
 
         mockMvc.perform(delete("/users/{userId}", 1L)
-                        .content(mapper.writeValueAsString(true))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
