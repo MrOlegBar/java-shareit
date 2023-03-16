@@ -1,7 +1,7 @@
 package ru.practicum.shareit.booking.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -17,16 +17,12 @@ import java.util.Collection;
 import java.util.List;
 
 @Service("BookingServiceImpl")
+@RequiredArgsConstructor
 @Slf4j
 public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     Sort startDateDescSort = Sort.by(Sort.Direction.DESC, "startDate");
     Collection<Booking> bookings = new ArrayList<>();
-
-    @Autowired
-    public BookingServiceImpl(BookingRepository bookingRepository) {
-        this.bookingRepository = bookingRepository;
-    }
 
     @Override
     public Booking create(Booking booking) {

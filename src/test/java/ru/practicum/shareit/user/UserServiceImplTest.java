@@ -79,9 +79,7 @@ public class UserServiceImplTest {
                 .thenThrow(new UserNotFoundException(String.format("Пользователь с userId = %s не найден.",
                         99L)));
 
-        Exception exception = assertThrows(UserNotFoundException.class, () -> {
-            userServiceImpl.getUserById(99L);
-        });
+        Exception exception = assertThrows(UserNotFoundException.class, () -> userServiceImpl.getUserById(99L));
 
         String expectedMessage = "Пользователь с userId = 99 не найден.";
         String actualMessage = exception.getMessage();

@@ -1,4 +1,4 @@
-create table IF NOT EXISTS USERS
+create table if not exists USERS
 (
     ID    BIGINT auto_increment
         primary key,
@@ -8,7 +8,18 @@ create table IF NOT EXISTS USERS
     NAME  CHARACTER VARYING(255)
 );
 
-create table IF NOT EXISTS ITEMS
+create table if not exists REQUESTS
+(
+    ID           BIGINT auto_increment
+        primary key,
+    CREATED      TIMESTAMP,
+    DESCRIPTION  CHARACTER VARYING(255),
+    REQUESTER_ID BIGINT,
+    constraint FKEOAX2T4J9I61P9LMON3009TR4
+        foreign key (REQUESTER_ID) references USERS
+);
+
+create table if not exists ITEMS
 (
     ID          BIGINT auto_increment
         primary key,
@@ -16,11 +27,14 @@ create table IF NOT EXISTS ITEMS
     DESCRIPTION CHARACTER VARYING(255),
     NAME        CHARACTER VARYING(255),
     OWNER_ID    BIGINT,
+    REQUEST_ID  BIGINT,
     constraint FKE37YI0I6RMAQCQICKVB1VTY22
-        foreign key (OWNER_ID) references USERS
+        foreign key (OWNER_ID) references USERS,
+    constraint FKT16U3OEB0G6Y6T9MQ43IDPONC
+        foreign key (REQUEST_ID) references REQUESTS
 );
 
-create table IF NOT EXISTS BOOKINGS
+create table if not exists BOOKINGS
 (
     ID         BIGINT auto_increment
         primary key,
@@ -35,7 +49,7 @@ create table IF NOT EXISTS BOOKINGS
         foreign key (BOOKER_ID) references USERS
 );
 
-create table IF NOT EXISTS COMMENTS
+create table if not exists COMMENTS
 (
     ID             BIGINT auto_increment
         primary key,

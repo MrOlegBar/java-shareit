@@ -17,7 +17,6 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.Request;
 import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.UserNotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -93,9 +92,8 @@ public class BookingServiceImplTest {
                 .thenThrow(new BookingNotFoundException(String.format("Бронирование с bookingId = %s не найдено.",
                         99L)));
 
-        Exception exception = assertThrows(BookingNotFoundException.class, () -> {
-            bookingService.getBookingById(99L);
-        });
+        Exception exception = assertThrows(BookingNotFoundException.class, () ->
+                bookingService.getBookingById(99L));
 
         String expectedMessage = "Бронирование с bookingId = 99 не найдено.";
         String actualMessage = exception.getMessage();

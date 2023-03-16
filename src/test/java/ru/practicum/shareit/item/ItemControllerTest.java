@@ -10,7 +10,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.booking.dto.ShortBookingDto;
-import ru.practicum.shareit.booking.exception.BookingNotFoundException;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.service.BookingService;
@@ -152,7 +151,8 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$.name", is(lessShortItemDtoForResponse.getName())))
                 .andExpect(jsonPath("$.description", is(lessShortItemDtoForResponse.getDescription())))
                 .andExpect(jsonPath("$.available", is(lessShortItemDtoForResponse.getAvailable())))
-                .andExpect(jsonPath("$.requestId", is(lessShortItemDtoForResponse.getRequestId()), Long.class));
+                .andExpect(jsonPath("$.requestId", is(lessShortItemDtoForResponse.getRequestId()),
+                        Long.class));
     }
 
     @Test
@@ -192,7 +192,8 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$.name", is(lessShortItemDtoForResponse.getName())))
                 .andExpect(jsonPath("$.description", is(lessShortItemDtoForResponse.getDescription())))
                 .andExpect(jsonPath("$.available", is(lessShortItemDtoForResponse.getAvailable())))
-                .andExpect(jsonPath("$.requestId", is(lessShortItemDtoForResponse.getRequestId()), Long.class));
+                .andExpect(jsonPath("$.requestId", is(lessShortItemDtoForResponse.getRequestId()),
+                        Long.class));
     }
 
     @Test
@@ -212,15 +213,20 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$.name", is(itemDtoForResponse.getName())))
                 .andExpect(jsonPath("$.description", is(itemDtoForResponse.getDescription())))
                 .andExpect(jsonPath("$.available", is(itemDtoForResponse.getAvailable())))
-                .andExpect(jsonPath("$.lastBooking.id", is(itemDtoForResponse.getLastBooking().getId()), Long.class))
-                .andExpect(jsonPath("$.lastBooking.bookerId", is(itemDtoForResponse.getLastBooking().getBookerId()), Long.class))
-                .andExpect(jsonPath("$.nextBooking.id", is(itemDtoForResponse.getNextBooking().getId()), Long.class))
-                .andExpect(jsonPath("$.nextBooking.bookerId", is(itemDtoForResponse.getNextBooking().getBookerId()), Long.class))
+                .andExpect(jsonPath("$.lastBooking.id", is(itemDtoForResponse.getLastBooking().getId()),
+                        Long.class))
+                .andExpect(jsonPath("$.lastBooking.bookerId", is(itemDtoForResponse.getLastBooking()
+                        .getBookerId()), Long.class))
+                .andExpect(jsonPath("$.nextBooking.id", is(itemDtoForResponse.getNextBooking().getId()),
+                        Long.class))
+                .andExpect(jsonPath("$.nextBooking.bookerId", is(itemDtoForResponse.getNextBooking()
+                        .getBookerId()), Long.class))
                 .andExpect(jsonPath("$.comments", hasSize(1)))
                 .andExpect(jsonPath("$.comments[0].id", is(commentDtoForResponse.getId()), Long.class))
                 .andExpect(jsonPath("$.comments[0].text", is(commentDtoForResponse.getText())))
                 .andExpect(jsonPath("$.comments[0].authorName", is(commentDtoForResponse.getAuthorName())))
-                .andExpect(jsonPath("$.comments[0].created", is(commentDtoForResponse.getCreated().format(formatter))));
+                .andExpect(jsonPath("$.comments[0].created", is(commentDtoForResponse.getCreated()
+                        .format(formatter))));
     }
 
     @Test
@@ -243,15 +249,20 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$[0].name", is(itemDtoForResponse.getName())))
                 .andExpect(jsonPath("$[0].description", is(itemDtoForResponse.getDescription())))
                 .andExpect(jsonPath("$[0].available", is(itemDtoForResponse.getAvailable())))
-                .andExpect(jsonPath("$[0].lastBooking.id", is(itemDtoForResponse.getLastBooking().getId()), Long.class))
-                .andExpect(jsonPath("$[0].lastBooking.bookerId", is(itemDtoForResponse.getLastBooking().getBookerId()), Long.class))
-                .andExpect(jsonPath("$[0].nextBooking.id", is(itemDtoForResponse.getNextBooking().getId()), Long.class))
-                .andExpect(jsonPath("$[0].nextBooking.bookerId", is(itemDtoForResponse.getNextBooking().getBookerId()), Long.class))
+                .andExpect(jsonPath("$[0].lastBooking.id", is(itemDtoForResponse.getLastBooking().getId()),
+                        Long.class))
+                .andExpect(jsonPath("$[0].lastBooking.bookerId", is(itemDtoForResponse.getLastBooking()
+                        .getBookerId()), Long.class))
+                .andExpect(jsonPath("$[0].nextBooking.id", is(itemDtoForResponse.getNextBooking().getId()),
+                        Long.class))
+                .andExpect(jsonPath("$[0].nextBooking.bookerId", is(itemDtoForResponse.getNextBooking()
+                        .getBookerId()), Long.class))
                 .andExpect(jsonPath("$[0].comments", hasSize(1)))
                 .andExpect(jsonPath("$[0].comments[0].id", is(commentDtoForResponse.getId()), Long.class))
                 .andExpect(jsonPath("$[0].comments[0].text", is(commentDtoForResponse.getText())))
                 .andExpect(jsonPath("$[0].comments[0].authorName", is(commentDtoForResponse.getAuthorName())))
-                .andExpect(jsonPath("$[0].comments[0].created", is(commentDtoForResponse.getCreated().format(formatter))));
+                .andExpect(jsonPath("$[0].comments[0].created", is(commentDtoForResponse.getCreated()
+                        .format(formatter))));
     }
 
     @Test
@@ -290,7 +301,8 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$[0].name", is(lessShortItemDtoForResponse.getName())))
                 .andExpect(jsonPath("$[0].description", is(lessShortItemDtoForResponse.getDescription())))
                 .andExpect(jsonPath("$[0].available", is(lessShortItemDtoForResponse.getAvailable())))
-                .andExpect(jsonPath("$[0].requestId", is(lessShortItemDtoForResponse.getRequestId()), Long.class));
+                .andExpect(jsonPath("$[0].requestId", is(lessShortItemDtoForResponse.getRequestId()),
+                        Long.class));
     }
 
     @Test

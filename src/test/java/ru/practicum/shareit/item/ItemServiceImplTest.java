@@ -20,7 +20,6 @@ import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.item.service.ItemServiceImpl;
 import ru.practicum.shareit.request.Request;
 import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.UserNotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -41,7 +40,6 @@ public class ItemServiceImplTest {
     private CommentRepository commentRepository;
     private Comment testComment;
     private Comment comment;
-    private Set<Comment> comments;
     private ItemDto testItemDto;
     private List<ItemDto> testItemsDto;
     private Item item;
@@ -52,7 +50,7 @@ public class ItemServiceImplTest {
 
     @BeforeEach
     public void setUp() {
-        comments = new HashSet<>();
+        Set<Comment> comments = new HashSet<>();
         Request request = new Request();
         User user = new User(1L, "user@user.com", "user");
 
@@ -122,9 +120,7 @@ public class ItemServiceImplTest {
                 .thenThrow(new ItemNotFoundException(String.format("Вещь с itemId = %s не найдена.",
                         99L)));
 
-        Exception exception = assertThrows(ItemNotFoundException.class, () -> {
-            itemService.getItemById(99L);
-        });
+        Exception exception = assertThrows(ItemNotFoundException.class, () -> itemService.getItemById(99L));
 
         String expectedMessage = "Вещь с itemId = 99 не найдена.";
         String actualMessage = exception.getMessage();

@@ -24,7 +24,8 @@ public class RequestServiceImplTest {
     @MockBean
     private RequestRepository requestRepository;
     private final User user = new User(1L, "user@user.com", "user");
-    private final Item item = new Item(1L, "Дрель", "Простая дрель", true, user, new Request(), new HashSet<>());
+    private final Item item = new Item(1L, "Дрель", "Простая дрель", true, user,
+            new Request(), new HashSet<>());
     private final Set<Item> items = new HashSet<>();
     private Request request;
     private Request testRequest;
