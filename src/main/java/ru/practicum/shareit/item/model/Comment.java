@@ -2,11 +2,11 @@ package ru.practicum.shareit.item.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
-import ru.practicum.shareit.base.BaseModel;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "comments")
@@ -14,14 +14,29 @@ import java.time.LocalDateTime;
 @Setter
 @ToString
 @NoArgsConstructor
-public class Comment extends BaseModel<Long> {
+public class Comment {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
     @Column(name = "text")
     private String text;
+    @ManyToOne
+    @JoinColumn(name = "authorName_id")
     private User author;
     @Column(name = "created", nullable = false, updatable = false)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd@HH:mm:ss")
     private LocalDateTime created = LocalDateTime.now();
+    @ManyToOne
+    @JoinColumn(name = "item_id")
     private Item item;
+
+    public Comment(Long id, String text, User author, Item item) {
+        this.id = id;
+        this.text = text;
+        this.author = author;
+        this.item = item;
+    }
 
     public Comment(String text, User author, Item item) {
         this.text = text;
@@ -29,42 +44,16 @@ public class Comment extends BaseModel<Long> {
         this.item = item;
     }
 
-    public Comment(Long id, String text, User author, Item item) {
-        super(id);
-        this.text = text;
-        this.author = author;
-        this.item = item;
-    }
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     @Override
-    public Long getId() {
-        return id;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Comment comment = (Comment) o;
+        return id.equals(comment.id);
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    @ManyToOne
-    @JoinColumn(name = "authorName_id")
-    public User getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(User authorName) {
-        this.author = authorName;
-    }
-
-    @ManyToOne
-    @JoinColumn(name = "item_id")
-    public Item getItem() {
-        return item;
-    }
-
-    public void setItem(Item item) {
-        this.item = item;
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

@@ -1,12 +1,12 @@
 package ru.practicum.shareit.booking.model;
 
 import lombok.*;
-import ru.practicum.shareit.base.BaseModel;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "bookings")
@@ -15,7 +15,11 @@ import java.time.LocalDateTime;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class Booking extends BaseModel<Long> {
+public class Booking {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
     @Column(name = "start_date")
     private LocalDateTime startDate;
     @Column(name = "end_date")
@@ -23,12 +27,14 @@ public class Booking extends BaseModel<Long> {
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     private BookingStatus status;
+    @ManyToOne
+    @JoinColumn(name = "item_id")
     private Item item;
+    @ManyToOne
+    @JoinColumn(name = "booker_id")
     private User booker;
 
-    public Booking(Long id, LocalDateTime startDate, LocalDateTime endDate, BookingStatus status, Item item,
-                   User booker) {
-        super(id);
+    public Booking(LocalDateTime startDate, LocalDateTime endDate, BookingStatus status, Item item, User booker) {
         this.startDate = startDate;
         this.endDate = endDate;
         this.status = status;
@@ -36,35 +42,16 @@ public class Booking extends BaseModel<Long> {
         this.booker = booker;
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     @Override
-    public Long getId() {
-        return id;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Booking booking = (Booking) o;
+        return id.equals(booking.id);
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    @ManyToOne
-    @JoinColumn(name = "booker_id")
-    public User getBooker() {
-        return booker;
-    }
-
-    public void setBooker(User booker) {
-        this.booker = booker;
-    }
-
-    @ManyToOne
-    @JoinColumn(name = "item_id")
-    public Item getItem() {
-        return item;
-    }
-
-    public void setItem(Item item) {
-        this.item = item;
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

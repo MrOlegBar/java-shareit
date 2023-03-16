@@ -1,47 +1,43 @@
 package ru.practicum.shareit.user;
 
 import lombok.*;
-import ru.practicum.shareit.base.BaseModel;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 @Table(name = "users",
         uniqueConstraints = @UniqueConstraint(name = "unique_email", columnNames = "email"))
-@NoArgsConstructor
 @Setter
 @Getter
+@ToString
+@NoArgsConstructor
 @AllArgsConstructor
-public class User extends BaseModel<Long> {
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
     @Column(name = "email")
     private String email;
     @Column(name = "name")
     private String name;
 
-    public User(Long id, String email, String name) {
-        super(id);
+    public User(String email, String name) {
         this.email = email;
         this.name = name;
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     @Override
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return id.equals(user.id);
     }
 
     @Override
-    public String toString() {
-        return "User{" +
-                "id='" + id + '\'' +
-                ", email='" + email + '\'' +
-                ", name=" + name +
-                '}';
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

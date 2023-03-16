@@ -3,32 +3,40 @@ package ru.practicum.shareit.item.model;
 import lombok.*;
 import ru.practicum.shareit.request.Request;
 import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.base.BaseModel;
 
 import javax.persistence.*;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
 @Table(name = "items")
 @Getter
 @Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class Item extends BaseModel<Long> {
+public class Item {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
     @Column(name = "name")
     private String name;
     @Column(name = "description")
     private String description;
     @Column(name = "available")
     private Boolean available;
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
     private User owner;
+    @ManyToOne
+    @JoinColumn(name = "request_id")
     private Request request;
+    @OneToMany(mappedBy = "item")
     private Set<Comment> comments = new HashSet<>();
 
-    public Item(Long id, String name, String description, Boolean available, User owner, Request request,
-                Set<Comment> comments) {
-        super(id);
+    public Item(String name, String description, Boolean available, User owner, Request request, Set<Comment> comments) {
         this.name = name;
         this.description = description;
         this.available = available;
@@ -37,53 +45,16 @@ public class Item extends BaseModel<Long> {
         this.comments = comments;
     }
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     @Override
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    @ManyToOne
-    @JoinColumn(name = "owner_id")
-    public User getOwner() {
-        return owner;
-    }
-
-    @OneToMany(mappedBy = "item")
-    public Set<Comment> getComments() {
-        return comments;
-    }
-
-    public void setComments(Set<Comment> comments) {
-        this.comments = comments;
-    }
-
-    @ManyToOne
-    @JoinColumn(name = "request_id")
-    public Request getRequest() {
-        return request;
-    }
-
-    public void setRequest(Request request) {
-        this.request = request;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Item item = (Item) o;
+        return id.equals(item.id);
     }
 
     @Override
-    public String toString() {
-        return "Item{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", available=" + available +
-                ", owner=" + owner +
-                ", comments=" + comments +
-                ", request=" + request +
-                '}';
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

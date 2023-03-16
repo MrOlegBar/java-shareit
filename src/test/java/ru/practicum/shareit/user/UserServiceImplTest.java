@@ -23,18 +23,18 @@ public class UserServiceImplTest {
     private UserService userServiceImpl;
     @MockBean
     private UserRepository userRepository;
-    User user;
+    User userForRequest;
     User testUser;
     List<User> testUsers;
 
     @BeforeEach
     public void setUp() {
-        user = new User("user@user.com", "user");
+        userForRequest = new User("user@user.com", "user");
 
         testUser = new User(1L, "user@user.com", "user");
 
         testUsers = new ArrayList<>();
-        testUsers.add(user);
+        testUsers.add(userForRequest);
     }
 
     @Test
@@ -42,7 +42,7 @@ public class UserServiceImplTest {
         Mockito.when(userRepository.save(any(User.class)))
                 .thenReturn(testUser);
 
-        User foundUser = userServiceImpl.create(user);
+        User foundUser = userServiceImpl.create(userForRequest);
 
         assertNotNull(foundUser);
         assertEquals(testUser, foundUser);
@@ -56,7 +56,7 @@ public class UserServiceImplTest {
         Mockito.when(userRepository.save(any(User.class)))
                 .thenReturn(testUser);
 
-        User foundUser = userServiceImpl.update(user);
+        User foundUser = userServiceImpl.update(userForRequest);
 
         assertNotNull(foundUser);
         assertEquals(testUser, foundUser);

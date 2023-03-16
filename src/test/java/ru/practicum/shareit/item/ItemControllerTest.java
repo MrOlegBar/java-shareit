@@ -86,8 +86,7 @@ public class ItemControllerTest {
     private final CommentDto commentDtoRequest = CommentDto.builder()
             .text("Add comment from user1")
             .build();
-    private final Comment commentForDto = new Comment();
-    private final Booking booking = new Booking();
+    private Comment commentForDto;
     private final List<Item> items = new ArrayList<>();
     private final List<ItemDto> itemsDtoResponse = new ArrayList<>();
     private final List<Booking> bookings = new ArrayList<>();
@@ -104,11 +103,10 @@ public class ItemControllerTest {
         itemForDto.setRequest(request);
 
         lessShortItemDtoForResponse = ItemMapper.toLessShortItemDto(itemForDto);
-
+        commentForDto = CommentMapper.toComment(commentDtoRequest);
         commentForDto.setId(1L);
-        commentForDto.setText("Add comment from user1");
         commentForDto.setAuthor(user);
-        commentForDto.setCreated(LocalDateTime.now());
+        commentForDto.setItem(itemForDto);
 
         commentDtoForResponse = CommentMapper.toCommentDto(commentForDto);
         comments.add(commentDtoForResponse);
@@ -122,12 +120,8 @@ public class ItemControllerTest {
 
         items.add(itemForDto);
 
-        booking.setItem(itemForDto);
-        booking.setBooker(user);
-        booking.setStatus(BookingStatus.APPROVED);
-        booking.setStartDate(LocalDateTime.now().minusDays(2L));
-        booking.setEndDate(LocalDateTime.now().minusDays(1L));
-
+        Booking booking = new Booking(LocalDateTime.now().minusDays(2L), LocalDateTime.now().minusDays(1L),
+                BookingStatus.APPROVED, itemForDto, user);
         bookings.add(booking);
     }
 

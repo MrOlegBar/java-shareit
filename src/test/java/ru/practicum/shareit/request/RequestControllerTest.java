@@ -51,7 +51,6 @@ public class RequestControllerTest {
             "user@user.com",
             "user");
     private LessShortItemDto lessShortItemDto;
-    private final Item item = new Item();
     private Request requestForDto;
     private final Request request = new Request();
     private RequestDto requestDtoForResponse;
@@ -63,11 +62,8 @@ public class RequestControllerTest {
     void setUp() {
         request.setId(1L);
 
-        item.setId(1L);
-        item.setName("Дрель");
-        item.setDescription("Простая дрель");
-        item.setAvailable(true);
-        item.setRequest(request);
+        Item item = new Item(1L, "Дрель", "Простая дрель", true, user, request,
+                new HashSet<>());
 
         items.add(item);
 

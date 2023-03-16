@@ -36,11 +36,11 @@ class UserControllerTest {
     @Autowired
     ObjectMapper mapper;
 
-    private User userForDto;
     private final UserDto userDtoRequest = UserDto.builder()
             .email("user@user.com")
             .name("user")
             .build();
+    private User userForDto;
     private UserDto userDtoForResponse;
     private final List<User> usersForDto = new ArrayList<>();
 
