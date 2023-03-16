@@ -12,6 +12,7 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingDtoForRequest;
 import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.BookingState;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.item.dto.LessShortItemDto;
@@ -98,7 +99,7 @@ public class BookingControllerTest {
                 .thenReturn(itemForDto);
         when(userService.getUserById(anyLong()))
                 .thenReturn(user);
-        when(bookingService.create(any()))
+        when(bookingService.create(any(Booking.class)))
                 .thenReturn(bookingForDto);
 
         mockMvc.perform(post("/bookings")
@@ -125,7 +126,7 @@ public class BookingControllerTest {
                 .thenReturn(user);
         when(bookingService.getBookingById(anyLong()))
                 .thenReturn(bookingForDto);
-        when(bookingService.update(any()))
+        when(bookingService.update(any(Booking.class)))
                 .thenReturn(bookingForDto);
 
         mockMvc.perform(patch("/bookings/{bookingId}", 1L)
@@ -170,7 +171,7 @@ public class BookingControllerTest {
     void shouldReturnAllBookingDto() throws Exception {
         when(userService.getUserById(anyLong()))
                 .thenReturn(user);
-        when(bookingService.getAllBookingsByBookerId(anyLong(), any(), anyInt(), anyInt()))
+        when(bookingService.getAllBookingsByBookerId(anyLong(), any(BookingState.class), anyInt(), anyInt()))
                 .thenReturn(bookings);
 
         mockMvc.perform(get("/bookings")
@@ -196,7 +197,7 @@ public class BookingControllerTest {
     void shouldReturnAllBookingDtoForOwner() throws Exception {
         when(userService.getUserById(anyLong()))
                 .thenReturn(user);
-        when(bookingService.getAllBookingsByOwnerId(anyLong(), any(), anyInt(), anyInt()))
+        when(bookingService.getAllBookingsByOwnerId(anyLong(), any(BookingState.class), anyInt(), anyInt()))
                 .thenReturn(bookings);
 
         mockMvc.perform(get("/bookings/owner")

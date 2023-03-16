@@ -133,7 +133,7 @@ public class ItemControllerTest {
                 .thenReturn(user);
         when(requestService.getRequestById(anyLong()))
                 .thenReturn(request);
-        when(itemService.create(any()))
+        when(itemService.create(any(Item.class)))
                 .thenReturn(itemForDto);
 
         mockMvc.perform(post("/items")
@@ -171,7 +171,7 @@ public class ItemControllerTest {
         itemForDto.setAvailable(false);
         itemForDto.setRequest(request);
 
-        when(itemService.update(any()))
+        when(itemService.update(any(Item.class)))
                 .thenReturn(itemForDto);
 
         lessShortItemDtoForResponse = ItemMapper.toLessShortItemDto(itemForDto);
@@ -278,7 +278,7 @@ public class ItemControllerTest {
                 .thenReturn(itemForDto);
         when(bookingService.getAllBookingsByBookerId(anyLong()))
                 .thenReturn(bookings);
-        when(itemService.createComment(any()))
+        when(itemService.createComment(any(Comment.class)))
                 .thenReturn(commentForDto);
 
         mockMvc.perform(post("/items/{itemId}/comment", 1L)

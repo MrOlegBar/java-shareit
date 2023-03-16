@@ -11,6 +11,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @Setter
 @Getter
+@AllArgsConstructor
 public class User extends BaseModel<Long> {
     @Column(name = "email")
     private String email;

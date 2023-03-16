@@ -56,7 +56,7 @@ class UserControllerTest {
 
     @Test
     void shouldReturnCreatedUserDto() throws Exception {
-        when(userService.create(any()))
+        when(userService.create(any(User.class)))
                 .thenReturn(userForDto);
 
         mockMvc.perform(post("/users")
@@ -82,7 +82,7 @@ class UserControllerTest {
         userForDto.setName("update");
         userForDto.setEmail("update@user.com");
 
-        when(userService.update(any()))
+        when(userService.update(any(User.class)))
                 .thenReturn(userForDto);
 
         userDtoForResponse = UserMapper.toUserDto(userForDto);
@@ -134,6 +134,8 @@ class UserControllerTest {
 
     @Test
     void shouldReturnTrueAfterDeleting() throws Exception {
+        when(userService.getUserById(anyLong()))
+                .thenReturn(userForDto);
         when(userService.deleteUser(anyLong()))
                 .thenReturn(true);
 

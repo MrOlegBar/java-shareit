@@ -25,8 +25,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Collection<User> getAllUsers() {
-        return userRepository.findAll();
+    public User update(User user) {
+        return userRepository.save(user);
     }
 
     @Override
@@ -39,15 +39,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User update(User user) {
-        return userRepository.save(user);
+    public Collection<User> getAllUsers() {
+        return userRepository.findAll();
     }
 
     @Override
     @Transactional
     public Boolean deleteUser(long userId) throws UserNotFoundException {
-        getUserById(userId);
-
         userRepository.deleteById(userId);
         return !userRepository.existsById(userId);
     }

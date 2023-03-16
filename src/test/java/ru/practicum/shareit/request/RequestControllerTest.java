@@ -88,7 +88,7 @@ public class RequestControllerTest {
     void shouldReturnCreatedRequestDto() throws Exception {
         when(userService.getUserById(anyLong()))
                 .thenReturn(user);
-        when(requestService.create(any()))
+        when(requestService.create(any(Request.class)))
                 .thenReturn(requestForDto);
 
         mockMvc.perform(post("/requests")
