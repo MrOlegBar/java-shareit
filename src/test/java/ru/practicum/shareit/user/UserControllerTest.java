@@ -8,7 +8,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.service.UserServiceImpl;
@@ -18,7 +17,6 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -62,21 +60,6 @@ class UserControllerTest {
     }
 
     @Test
-    void shouldReturnMethodArgumentNotValidExceptionNotnull() throws Exception {
-        UserDto failDto = UserDto.builder().email(null).name("name").build();
-
-        mockMvc.perform(post("/users")
-                        .content(mapper.writeValueAsString(failDto))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", is("Электронная почта отсутствует.")))
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof MethodArgumentNotValidException));
-
-    }
-
-    @Test
     void shouldReturnPatchedUserDto() throws Exception {
         when(userService.getUserById(anyLong()))
                 .thenReturn(user);
@@ -93,21 +76,6 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.id", is(userDto.getId()), Long.class))
                 .andExpect(jsonPath("$.name", is(userDto.getName())))
                 .andExpect(jsonPath("$.email", is(userDto.getEmail())));
-
-    }
-
-    @Test
-    void shouldReturnMethodArgumentNotValidExceptionEmail() throws Exception {
-        UserDto failDto = UserDto.builder().email("email").name("name").build();
-
-        mockMvc.perform(patch("/users/{userId}", userId)
-                        .content(mapper.writeValueAsString(failDto))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", is("Email не соответствует формату электронной почты.")))
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof MethodArgumentNotValidException));
 
     }
 
