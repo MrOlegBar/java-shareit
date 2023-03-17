@@ -13,7 +13,6 @@ import ru.practicum.shareit.booking.model.BookingStatus;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 @Service("BookingServiceImpl")
@@ -22,7 +21,7 @@ import java.util.List;
 public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     Sort startDateDescSort = Sort.by(Sort.Direction.DESC, "startDate");
-    Collection<Booking> bookings = new ArrayList<>();
+    List<Booking> bookings = new ArrayList<>();
 
     @Override
     public Booking create(Booking booking) {
@@ -76,7 +75,7 @@ public class BookingServiceImpl implements BookingService {
                         LocalDateTime.now(), PageRequest.of(from, size, startDateDescSort));
                 break;
         }
-        return (List<Booking>) bookings;
+        return bookings;
     }
 
     @Override
@@ -107,6 +106,6 @@ public class BookingServiceImpl implements BookingService {
                         LocalDateTime.now(), PageRequest.of(from, size, startDateDescSort));
                 break;
         }
-        return (List<Booking>) bookings;
+        return bookings;
     }
 }

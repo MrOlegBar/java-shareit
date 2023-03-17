@@ -2,23 +2,23 @@ package ru.practicum.shareit.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.service.UserServiceImpl;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -29,96 +29,108 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(UserController.class)
 class UserControllerTest {
-    @MockBean
-    private UserServiceImpl userService;
-    @Autowired
-    private MockMvc mockMvc;
     @Autowired
     ObjectMapper mapper;
+    @Autowired
+    private MockMvc mockMvc;
+    @MockBean
+    private UserServiceImpl userService;
+    private final Long userId = 1L;
 
-    private final UserDto userDtoRequest = UserDto.builder()
+    private final UserDto userDto = UserDto.builder()
+            .id(1L)
             .email("user@user.com")
             .name("user")
             .build();
-    private User userForDto;
-    private UserDto userDtoForResponse;
-    private final List<User> usersForDto = new ArrayList<>();
-
-    @BeforeEach
-    void setUp() {
-        userForDto = UserMapper.toUser(userDtoRequest);
-        userForDto.setId(1L);
-
-        usersForDto.add(userForDto);
-
-        userDtoForResponse = UserMapper.toUserDto(userForDto);
-    }
+    private final User user = UserMapper.toUser(userDto);
 
     @Test
     void shouldReturnCreatedUserDto() throws Exception {
-        when(userService.create(any(User.class)))
-                .thenReturn(userForDto);
+        when(userService.create(any()))
+                .thenReturn(user);
 
         mockMvc.perform(post("/users")
-                        .content(mapper.writeValueAsString(userDtoRequest))
+                        .content(mapper.writeValueAsString(userDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(userDtoForResponse.getId()), Long.class))
-                .andExpect(jsonPath("$.name", is(userDtoForResponse.getName())))
-                .andExpect(jsonPath("$.email", is(userDtoForResponse.getEmail())));
+                .andExpect(jsonPath("$.id", is(userDto.getId()), Long.class))
+                .andExpect(jsonPath("$.name", is(userDto.getName())))
+                .andExpect(jsonPath("$.email", is(userDto.getEmail())));
+
+    }
+
+    @Test
+    void shouldReturnMethodArgumentNotValidExceptionNotnull() throws Exception {
+        UserDto failDto = UserDto.builder().email(null).name("name").build();
+
+        mockMvc.perform(post("/users")
+                        .content(mapper.writeValueAsString(failDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("Электронная почта отсутствует.")))
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof MethodArgumentNotValidException));
 
     }
 
     @Test
     void shouldReturnPatchedUserDto() throws Exception {
-        userDtoRequest.setName("update");
-        userDtoRequest.setEmail("update@user.com");
+        when(userService.getUserById(anyLong()))
+                .thenReturn(user);
 
-        when(userService.getUserById(1L))
-                .thenReturn(userForDto);
+        when(userService.update(any()))
+                .thenReturn(user);
 
-        userForDto.setName("update");
-        userForDto.setEmail("update@user.com");
-
-        when(userService.update(any(User.class)))
-                .thenReturn(userForDto);
-
-        userDtoForResponse = UserMapper.toUserDto(userForDto);
-
-        mockMvc.perform(patch("/users/{userId}", 1L)
-                        .content(mapper.writeValueAsString(userDtoRequest))
+        mockMvc.perform(patch("/users/{userId}", userId)
+                        .content(mapper.writeValueAsString(userDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(userDtoForResponse.getId()), Long.class))
-                .andExpect(jsonPath("$.name", is(userDtoForResponse.getName())))
-                .andExpect(jsonPath("$.email", is(userDtoForResponse.getEmail())));
+                .andExpect(jsonPath("$.id", is(userDto.getId()), Long.class))
+                .andExpect(jsonPath("$.name", is(userDto.getName())))
+                .andExpect(jsonPath("$.email", is(userDto.getEmail())));
+
+    }
+
+    @Test
+    void shouldReturnMethodArgumentNotValidExceptionEmail() throws Exception {
+        UserDto failDto = UserDto.builder().email("email").name("name").build();
+
+        mockMvc.perform(patch("/users/{userId}", userId)
+                        .content(mapper.writeValueAsString(failDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", is("Email не соответствует формату электронной почты.")))
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof MethodArgumentNotValidException));
 
     }
 
     @Test
     void shouldReturnUserDtoById() throws Exception {
         when(userService.getUserById(anyLong()))
-                .thenReturn(userForDto);
+                .thenReturn(user);
 
-        mockMvc.perform(get("/users/{userId}", 1L)
+        mockMvc.perform(get("/users/{userId}", userId)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(userDtoForResponse.getId()), Long.class))
-                .andExpect(jsonPath("$.name", is(userDtoForResponse.getName())))
-                .andExpect(jsonPath("$.email", is(userDtoForResponse.getEmail())));
+                .andExpect(jsonPath("$.id", is(userDto.getId()), Long.class))
+                .andExpect(jsonPath("$.name", is(userDto.getName())))
+                .andExpect(jsonPath("$.email", is(userDto.getEmail())));
 
     }
 
     @Test
-    void shouldReturnAllUsersDto() throws Exception {
+    void shouldReturnAllUserDto() throws Exception {
         when(userService.getAllUsers())
-                .thenReturn(usersForDto);
+                .thenReturn(List.of(user));
 
         mockMvc.perform(get("/users")
                         .characterEncoding(StandardCharsets.UTF_8)
@@ -126,20 +138,20 @@ class UserControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is(userDtoForResponse.getId()), Long.class))
-                .andExpect(jsonPath("$[0].name", is(userDtoForResponse.getName())))
-                .andExpect(jsonPath("$[0].email", is(userDtoForResponse.getEmail())));
+                .andExpect(jsonPath("$[0].id", is(userDto.getId()), Long.class))
+                .andExpect(jsonPath("$[0].name", is(userDto.getName())))
+                .andExpect(jsonPath("$[0].email", is(userDto.getEmail())));
 
     }
 
     @Test
     void shouldReturnTrueAfterDeleting() throws Exception {
         when(userService.getUserById(anyLong()))
-                .thenReturn(userForDto);
+                .thenReturn(user);
         when(userService.deleteUser(anyLong()))
                 .thenReturn(true);
 
-        mockMvc.perform(delete("/users/{userId}", 1L)
+        mockMvc.perform(delete("/users/{userId}", userId)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))

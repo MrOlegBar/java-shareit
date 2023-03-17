@@ -8,9 +8,6 @@ import java.util.Objects;
 @Entity
 @Table(name = "users",
         uniqueConstraints = @UniqueConstraint(name = "unique_email", columnNames = "email"))
-@Setter
-@Getter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
@@ -28,6 +25,30 @@ public class User {
         this.name = name;
     }
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -38,6 +59,6 @@ public class User {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return this.id != null ? this.id.hashCode() : 0;
     }
 }

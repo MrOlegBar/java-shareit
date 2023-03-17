@@ -113,7 +113,7 @@ public class BookingServiceImplTest {
     }
 
     @Test
-    public void shouldReturnAllBookingByBookerIdWithPagination() {
+    public void shouldReturnAllBookingByBookerIdWithPaginationAndStateAll() {
         Mockito.when(bookingRepository.findAllByBooker_Id(anyLong(), any(PageRequest.class)))
                 .thenReturn(testBookings);
 
@@ -125,11 +125,141 @@ public class BookingServiceImplTest {
     }
 
     @Test
-    public void shouldReturnAllBookingByOwnerIdWithPagination() {
+    public void shouldReturnAllBookingByBookerIdWithPaginationAndStateWAITING() {
+        Mockito.when(bookingRepository.findAllByBooker_IdAndStatus(anyLong(), any(BookingStatus.class),
+                        any(PageRequest.class)))
+                .thenReturn(testBookings);
+
+        List<Booking> foundBookings = bookingService.getAllBookingsByBookerId(1L, BookingState.WAITING,
+                0, 10);
+
+        assertNotNull(foundBookings);
+        assertEquals(testBookings, foundBookings);
+    }
+
+    @Test
+    public void shouldReturnAllBookingByBookerIdWithPaginationAndStateREJECTED() {
+        Mockito.when(bookingRepository.findAllByBooker_IdAndStatus(anyLong(), any(BookingStatus.class),
+                        any(PageRequest.class)))
+                .thenReturn(testBookings);
+
+        List<Booking> foundBookings = bookingService.getAllBookingsByBookerId(1L, BookingState.REJECTED,
+                0, 10);
+
+        assertNotNull(foundBookings);
+        assertEquals(testBookings, foundBookings);
+    }
+
+    @Test
+    public void shouldReturnAllBookingByBookerIdWithPaginationAndStatePAST() {
+        Mockito.when(bookingRepository.findAllByBooker_IdAndEndDateIsBefore(anyLong(), any(LocalDateTime.class),
+                        any(PageRequest.class)))
+                .thenReturn(testBookings);
+
+        List<Booking> foundBookings = bookingService.getAllBookingsByBookerId(1L, BookingState.PAST,
+                0, 10);
+
+        assertNotNull(foundBookings);
+        assertEquals(testBookings, foundBookings);
+    }
+
+    @Test
+    public void shouldReturnAllBookingByBookerIdWithPaginationAndStateFUTURE() {
+        Mockito.when(bookingRepository.findAllByBooker_IdAndStartDateIsAfter(anyLong(), any(LocalDateTime.class),
+                        any(PageRequest.class)))
+                .thenReturn(testBookings);
+
+        List<Booking> foundBookings = bookingService.getAllBookingsByBookerId(1L, BookingState.FUTURE,
+                0, 10);
+
+        assertNotNull(foundBookings);
+        assertEquals(testBookings, foundBookings);
+    }
+
+    @Test
+    public void shouldReturnAllBookingByBookerIdWithPaginationAndStateCURRENT() {
+        Mockito.when(bookingRepository.findAllByBooker_IdAndDateTimeNowBetweenStartDateAndEndDate(anyLong(), any(LocalDateTime.class),
+                        any(PageRequest.class)))
+                .thenReturn(testBookings);
+
+        List<Booking> foundBookings = bookingService.getAllBookingsByBookerId(1L, BookingState.CURRENT,
+                0, 10);
+
+        assertNotNull(foundBookings);
+        assertEquals(testBookings, foundBookings);
+    }
+
+    @Test
+    public void shouldReturnAllBookingByOwnerIdWithPaginationAndStatusALL() {
         Mockito.when(bookingRepository.findAllByItem_Owner_Id(anyLong(), any(PageRequest.class)))
                 .thenReturn(testBookings);
 
         List<Booking> foundBookings = bookingService.getAllBookingsByOwnerId(1L, BookingState.ALL,
+                0, 10);
+
+        assertNotNull(foundBookings);
+        assertEquals(testBookings, foundBookings);
+    }
+
+    @Test
+    public void shouldReturnAllBookingByOwnerIdWithPaginationAndStatusWAITING() {
+        Mockito.when(bookingRepository.findAllByItem_Owner_IdAndStatus(anyLong(), any(BookingStatus.class),
+                        any(PageRequest.class)))
+                .thenReturn(testBookings);
+
+        List<Booking> foundBookings = bookingService.getAllBookingsByOwnerId(1L, BookingState.WAITING,
+                0, 10);
+
+        assertNotNull(foundBookings);
+        assertEquals(testBookings, foundBookings);
+    }
+
+    @Test
+    public void shouldReturnAllBookingByOwnerIdWithPaginationAndStatusREJECTED() {
+        Mockito.when(bookingRepository.findAllByItem_Owner_IdAndStatus(anyLong(), any(BookingStatus.class),
+                        any(PageRequest.class)))
+                .thenReturn(testBookings);
+
+        List<Booking> foundBookings = bookingService.getAllBookingsByOwnerId(1L, BookingState.REJECTED,
+                0, 10);
+
+        assertNotNull(foundBookings);
+        assertEquals(testBookings, foundBookings);
+    }
+
+    @Test
+    public void shouldReturnAllBookingByOwnerIdWithPaginationAndStatusPAST() {
+        Mockito.when(bookingRepository.findAllByItem_Owner_IdAndEndDateIsBefore(anyLong(), any(LocalDateTime.class),
+                        any(PageRequest.class)))
+                .thenReturn(testBookings);
+
+        List<Booking> foundBookings = bookingService.getAllBookingsByOwnerId(1L, BookingState.PAST,
+                0, 10);
+
+        assertNotNull(foundBookings);
+        assertEquals(testBookings, foundBookings);
+    }
+
+    @Test
+    public void shouldReturnAllBookingByOwnerIdWithPaginationAndStatusFUTURE() {
+        Mockito.when(bookingRepository.findAllByItem_Owner_IdAndStartDateIsAfter(anyLong(), any(LocalDateTime.class),
+                        any(PageRequest.class)))
+                .thenReturn(testBookings);
+
+        List<Booking> foundBookings = bookingService.getAllBookingsByOwnerId(1L, BookingState.FUTURE,
+                0, 10);
+
+        assertNotNull(foundBookings);
+        assertEquals(testBookings, foundBookings);
+    }
+
+    @Test
+    public void shouldReturnAllBookingByOwnerIdWithPaginationAndStatusCURRENT() {
+        Mockito.when(bookingRepository.findAllByItem_Owner_IdAndDateTimeNowBetweenStartDateAndEndDate(anyLong(),
+                        any(LocalDateTime.class), any(PageRequest.class)))
+                .thenReturn(testBookings);
+
+        List<Booking> foundBookings = bookingService.getAllBookingsByOwnerId(1L, BookingState.CURRENT,
                 0, 10);
 
         assertNotNull(foundBookings);

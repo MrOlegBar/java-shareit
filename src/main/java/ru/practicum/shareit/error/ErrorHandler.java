@@ -1,5 +1,6 @@
 package ru.practicum.shareit.error;
 
+import org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException;
 import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -57,7 +58,7 @@ public class ErrorHandler {
         return new ErrorResponse(e.getMessage());
     }
 
-    @ExceptionHandler(org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException.class)
+    @ExceptionHandler(JdbcSQLIntegrityConstraintViolationException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleSQLError(SQLException e) {
         return new ErrorResponse(e.getMessage().split(":")[0]);

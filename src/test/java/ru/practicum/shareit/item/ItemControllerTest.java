@@ -82,11 +82,9 @@ public class ItemControllerTest {
             .id(2L)
             .bookerId(1L)
             .build();
-    private CommentDto commentDtoForResponse;
-    private final CommentDto commentDtoRequest = CommentDto.builder()
-            .text("Add comment from user1")
-            .build();
-    private Comment commentForDto;
+    private CommentDto commentDtoForResponse = new CommentDto();
+    private final CommentDto commentDtoRequest = new CommentDto();
+    private Comment commentForDto = new Comment();
     private final List<Item> items = new ArrayList<>();
     private final List<ItemDto> itemsDtoResponse = new ArrayList<>();
     private final List<Booking> bookings = new ArrayList<>();
@@ -102,14 +100,18 @@ public class ItemControllerTest {
         itemForDto.setOwner(user);
         itemForDto.setRequest(request);
 
-        lessShortItemDtoForResponse = ItemMapper.toLessShortItemDto(itemForDto);
+        commentDtoRequest.setText("Add comment from user1");
+
         commentForDto = CommentMapper.toComment(commentDtoRequest);
         commentForDto.setId(1L);
         commentForDto.setAuthor(user);
         commentForDto.setItem(itemForDto);
 
         commentDtoForResponse = CommentMapper.toCommentDto(commentForDto);
+
         comments.add(commentDtoForResponse);
+
+        lessShortItemDtoForResponse = ItemMapper.toLessShortItemDto(itemForDto);
 
         itemDtoForResponse = ItemMapper.toItemDto(itemForDto);
         itemDtoForResponse.setLastBooking(lastBooking);
