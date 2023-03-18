@@ -6,7 +6,6 @@ import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -50,11 +49,11 @@ public class Item {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Item item = (Item) o;
-        return id.equals(item.id);
+        return (this.id != null && id.equals(item.id));
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return this.id != null ? this.id.hashCode() : 0;
     }
 }

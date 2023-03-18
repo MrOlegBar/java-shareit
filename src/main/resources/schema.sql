@@ -1,3 +1,5 @@
+drop table if exists USERS, ITEMS, BOOKINGS, COMMENTS, REQUESTS;
+
 create table if not exists USERS
 (
     ID    BIGINT auto_increment

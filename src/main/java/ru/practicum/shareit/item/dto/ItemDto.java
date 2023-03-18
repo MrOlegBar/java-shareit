@@ -1,7 +1,6 @@
 package ru.practicum.shareit.item.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import lombok.*;
 import ru.practicum.shareit.booking.dto.ShortBookingDto;
 import ru.practicum.shareit.constraintGroup.Post;
 
@@ -10,6 +9,8 @@ import javax.validation.constraints.NotNull;
 import java.util.Set;
 
 @Builder
+@Getter
+@Setter
 @AllArgsConstructor
 public class ItemDto {
     private Long id;
@@ -23,73 +24,16 @@ public class ItemDto {
     private ShortBookingDto nextBooking;
     private Set<CommentDto> comments;
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ItemDto itemDto = (ItemDto) o;
-        return id.equals(itemDto.id);
+        return (this.id != null && id.equals(itemDto.id));
     }
 
     @Override
     public int hashCode() {
         return this.id != null ? this.id.hashCode() : 0;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public Boolean getAvailable() {
-        return available;
-    }
-
-    public void setAvailable(Boolean available) {
-        this.available = available;
-    }
-
-    public ShortBookingDto getLastBooking() {
-        return lastBooking;
-    }
-
-    public void setLastBooking(ShortBookingDto lastBooking) {
-        this.lastBooking = lastBooking;
-    }
-
-    public ShortBookingDto getNextBooking() {
-        return nextBooking;
-    }
-
-    public void setNextBooking(ShortBookingDto nextBooking) {
-        this.nextBooking = nextBooking;
-    }
-
-    public Set<CommentDto> getComments() {
-        return comments;
-    }
-
-    public void setComments(Set<CommentDto> comments) {
-        this.comments = comments;
     }
 }

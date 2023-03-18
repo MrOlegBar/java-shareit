@@ -4,7 +4,6 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.jdbc.Sql;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
@@ -44,7 +43,6 @@ public class ItemRepositoryTest {
     }
 
     @Test
-    @DirtiesContext
     public void shouldReturnItemByOwner_IdAndId() {
         long itemId = 1L;
 
@@ -54,7 +52,6 @@ public class ItemRepositoryTest {
     }
 
     @Test
-    @DirtiesContext
     public void shouldReturnAllItemByOwner_Id() {
         List<Item> actual = itemRepository.findAllByOwner_Id(userId, PageRequest.of(from, size));
 
@@ -62,7 +59,6 @@ public class ItemRepositoryTest {
     }
 
     @Test
-    @DirtiesContext
     public void shouldReturnAllItemBySearch() {
         String text = "дрель";
 

@@ -3,7 +3,6 @@ package ru.practicum.shareit.item;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.jdbc.Sql;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
@@ -34,7 +33,6 @@ public class CommentRepositoryTest {
     private final LocalDateTime dateTime = LocalDateTime.now();
 
     @Test
-    @DirtiesContext
     public void shouldReturnCreatedUser() {
         item.setId(1L);
         item.setName("Дрель");

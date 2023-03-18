@@ -20,6 +20,15 @@ public class ItemMapper {
                 .build();
     }
 
+    public static Item toItem(LessShortItemDto lessShortItemDto) {
+        Item item = new Item();
+        item.setId(lessShortItemDto.getId());
+        item.setName(lessShortItemDto.getName());
+        item.setDescription(lessShortItemDto.getDescription());
+        item.setAvailable(lessShortItemDto.getAvailable());
+        return item;
+    }
+
     public static ItemDto toItemDto(Item item) {
         ItemDto itemDto = ItemDto.builder().build();
         itemDto.setId(item.getId());
@@ -31,14 +40,5 @@ public class ItemMapper {
                 .map(CommentMapper::toCommentDto)
                 .collect(Collectors.toSet()));
         return itemDto;
-    }
-
-    public static Item toItem(LessShortItemDto lessShortItemDto) {
-        Item item = new Item();
-        item.setId(lessShortItemDto.getId());
-        item.setName(lessShortItemDto.getName());
-        item.setDescription(lessShortItemDto.getDescription());
-        item.setAvailable(lessShortItemDto.getAvailable());
-        return item;
     }
 }

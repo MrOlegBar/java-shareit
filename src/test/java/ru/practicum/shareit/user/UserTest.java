@@ -2,7 +2,6 @@ package ru.practicum.shareit.user;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.practicum.shareit.user.User;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -19,9 +18,9 @@ public class UserTest {
 
     @Test
     void equalsT() {
-        assertFalse(userOne.equals(null));
-        assertTrue(userOne.equals(userOne));
-        assertTrue(userOne.equals(userTwo));
+        assertNotEquals(null, userOne);
+        assertEquals(userOne, userOne);
+        assertEquals(userOne, userTwo);
     }
 
     @Test
