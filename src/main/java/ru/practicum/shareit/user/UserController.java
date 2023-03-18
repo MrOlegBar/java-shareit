@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.constraintGroup.Post;
-import ru.practicum.shareit.constraintGroup.Put;
+import ru.practicum.shareit.constraintGroup.Patch;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.service.UserServiceImpl;
@@ -24,9 +24,9 @@ public class UserController {
     }
 
     @PatchMapping("/users/{userId}")
-    public UserDto putUser(@PathVariable Long userId,
-                           @Validated(Put.class)
-                           @RequestBody UserDto userDto) throws UserNotFoundException {
+    public UserDto patchUser(@PathVariable Long userId,
+                             @Validated(Patch.class)
+                             @RequestBody UserDto userDto) throws UserNotFoundException {
         User user = userService.getUserById(userId);
 
         if (userDto.getName() != null) {

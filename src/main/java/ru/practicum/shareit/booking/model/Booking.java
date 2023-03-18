@@ -6,7 +6,6 @@ import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Objects;
 
 @Entity
 @Table(name = "bookings")
@@ -47,11 +46,11 @@ public class Booking {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Booking booking = (Booking) o;
-        return id.equals(booking.id);
+        return (this.id != null && id.equals(booking.id));
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return this.id != null ? this.id.hashCode() : 0;
     }
 }

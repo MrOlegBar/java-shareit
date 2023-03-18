@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.dto.mapper;
 
 import org.springframework.stereotype.Component;
+import ru.practicum.shareit.item.dto.ShortItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.dto.LessShortItemDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -40,5 +41,12 @@ public class ItemMapper {
                 .map(CommentMapper::toCommentDto)
                 .collect(Collectors.toSet()));
         return itemDto;
+    }
+
+    public static ShortItemDto toShortItemDto(Item item) {
+        return ShortItemDto.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .build();
     }
 }

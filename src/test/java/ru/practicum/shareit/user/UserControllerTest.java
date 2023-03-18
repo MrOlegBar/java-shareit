@@ -44,7 +44,7 @@ class UserControllerTest {
 
     @Test
     void shouldReturnCreatedUserDto() throws Exception {
-        when(userService.create(any()))
+        when(userService.create(any(User.class)))
                 .thenReturn(user);
 
         mockMvc.perform(post("/users")
@@ -64,7 +64,7 @@ class UserControllerTest {
         when(userService.getUserById(anyLong()))
                 .thenReturn(user);
 
-        when(userService.update(any()))
+        when(userService.update(any(User.class)))
                 .thenReturn(user);
 
         mockMvc.perform(patch("/users/{userId}", userId)
@@ -84,10 +84,7 @@ class UserControllerTest {
         when(userService.getUserById(anyLong()))
                 .thenReturn(user);
 
-        mockMvc.perform(get("/users/{userId}", userId)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/users/{userId}", userId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(userDto.getId()), Long.class))
                 .andExpect(jsonPath("$.name", is(userDto.getName())))
@@ -100,10 +97,7 @@ class UserControllerTest {
         when(userService.getAllUsers())
                 .thenReturn(List.of(user));
 
-        mockMvc.perform(get("/users")
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/users"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id", is(userDto.getId()), Long.class))

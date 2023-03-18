@@ -1,15 +1,10 @@
 package ru.practicum.shareit.item;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.practicum.shareit.item.dto.LessShortItemDto;
 import ru.practicum.shareit.item.dto.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.request.Request;
-import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.dto.UserMapper;
 
 import java.util.HashSet;
 
@@ -17,11 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 public class LessShortItemDtoTest {
-    private final Request request = new Request();
-    private final User user = new User(
-            1L,
-            "user@user.com",
-            "user");
     private final LessShortItemDto lessShortItemDto = LessShortItemDto.builder().build();
     private final LessShortItemDto lessShortItemDtoExpected = LessShortItemDto.builder()
             .id(1L)

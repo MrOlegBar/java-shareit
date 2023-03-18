@@ -42,7 +42,7 @@ create table if not exists BOOKINGS
         primary key,
     END_DATE   TIMESTAMP,
     START_DATE TIMESTAMP,
-    STATUS     INTEGER,
+    STATUS     VARCHAR,
     BOOKER_ID  BIGINT,
     ITEM_ID    BIGINT,
     constraint FKBTV44E8P4A4PQ8HFUAKJBTFPC

@@ -33,7 +33,7 @@ public class UserServiceTest {
 
     @Test
     public void shouldReturnCreatedUser() {
-        Mockito.when(userRepository.save(any()))
+        Mockito.when(userRepository.save(any(User.class)))
                 .thenReturn(user);
 
         User actual = userService.create(user);
@@ -43,7 +43,7 @@ public class UserServiceTest {
 
     @Test
     public void shouldReturnUpdatedUser() {
-        Mockito.when(userRepository.save(any()))
+        Mockito.when(userRepository.save(any(User.class)))
                 .thenReturn(user);
 
         User actual = userService.update(user);

@@ -70,9 +70,9 @@ public class BookingController {
 
     @PatchMapping("/bookings/{bookingId}")
     @Transactional
-    public BookingDto putBooking(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                 @PathVariable Long bookingId,
-                                 @RequestParam Boolean approved) {
+    public BookingDto patchBooking(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                   @PathVariable Long bookingId,
+                                   @RequestParam Boolean approved) {
         userService.getUserById(userId);
         Booking booking = bookingService.getBookingById(bookingId);
 

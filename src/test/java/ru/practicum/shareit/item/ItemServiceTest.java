@@ -1,11 +1,11 @@
 package ru.practicum.shareit.item;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
@@ -41,11 +41,18 @@ public class ItemServiceTest {
     long wrongItemId = 99L;
     private final int from = 0;
     private final int size = 10;
-    private final Item item = new Item();
     private final User user = new User(
             1L,
             "user@user.com",
             "user");
+    private final Item item = new Item(
+            1L,
+            "Дрель",
+            "Простая дрель",
+            true,
+            user,
+            null,
+            new HashSet<>());
     private final Booking lastBooking = new Booking(
             1L,
             LocalDateTime.now().minusDays(2),
@@ -77,18 +84,9 @@ public class ItemServiceTest {
             .comments(Set.of(commentDto))
             .build();
 
-    @BeforeEach
-    void setUp() {
-        item.setId(1L);
-        item.setName("Дрель");
-        item.setDescription("Простая дрель");
-        item.setAvailable(true);
-        item.setName(user.getName());
-    }
-
     @Test
     public void shouldReturnCreatedItem() {
-        Mockito.when(itemRepository.save(any()))
+        Mockito.when(itemRepository.save(any(Item.class)))
                 .thenReturn(item);
 
         Item actual = itemService.create(item);
@@ -98,7 +96,7 @@ public class ItemServiceTest {
 
     @Test
     public void shouldReturnUpdatedItem() {
-        Mockito.when(itemRepository.save(any()))
+        Mockito.when(itemRepository.save(any(Item.class)))
                 .thenReturn(item);
 
         Item actual = itemService.update(item);
@@ -157,10 +155,10 @@ public class ItemServiceTest {
         Mockito.when(itemRepository.findItemByOwner_IdAndId(anyLong(), anyLong()))
                 .thenReturn(Optional.of(item));
         Mockito.when(bookingRepository.findFirstByItem_IdAndStatusAndStartDateIsBeforeOrderByEndDateDesc(anyLong(),
-                        any(), any()))
+                        any(BookingStatus.class), any(LocalDateTime.class)))
                 .thenReturn(Optional.of(lastBooking));
         Mockito.when(bookingRepository.findFirstByItem_IdAndStatusAndStartDateIsAfterOrderByStartDateAsc(anyLong(),
-                        any(), any()))
+                        any(BookingStatus.class), any(LocalDateTime.class)))
                 .thenReturn(Optional.of(nextBooking));
 
         ItemDto foundItemDto = itemService.getItemDtoByOwnerIdAndItemId(userId, itemId);
@@ -170,7 +168,7 @@ public class ItemServiceTest {
 
     @Test
     public void shouldReturnAllItemDtoByOwnerId() {
-        Mockito.when(itemRepository.findAllByOwner_Id(anyLong(), any()))
+        Mockito.when(itemRepository.findAllByOwner_Id(anyLong(), any(Pageable.class)))
                 .thenReturn(List.of(item));
 
         List<ItemDto> actual = itemService.getAllItemsDtoByOwnerId(userId, from, size);
@@ -180,7 +178,7 @@ public class ItemServiceTest {
 
     @Test
     public void shouldReturnAllItemBySearch() {
-        Mockito.when(itemRepository.findAllBySearch(anyString(), any()))
+        Mockito.when(itemRepository.findAllBySearch(anyString(), any(Pageable.class)))
                 .thenReturn(List.of(item));
 
         List<Item> actual = itemService.findItemsBySearch("Дрель", from, size);
@@ -190,7 +188,7 @@ public class ItemServiceTest {
 
     @Test
     public void shouldReturnCreatedComment() {
-        Mockito.when(commentRepository.save(any()))
+        Mockito.when(commentRepository.save(any(Comment.class)))
                 .thenReturn(comment);
 
         Comment actual = itemService.createComment(comment);

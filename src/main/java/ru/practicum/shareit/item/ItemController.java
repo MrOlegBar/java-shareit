@@ -12,7 +12,7 @@ import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.mapper.CommentMapper;
 import ru.practicum.shareit.constraintGroup.Post;
-import ru.practicum.shareit.constraintGroup.Put;
+import ru.practicum.shareit.constraintGroup.Patch;
 import ru.practicum.shareit.item.dto.LessShortItemDto;
 import ru.practicum.shareit.item.dto.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Comment;
@@ -59,9 +59,9 @@ public class ItemController {
     }
 
     @PatchMapping("/items/{itemId}")
-    public LessShortItemDto putItem(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                    @Validated(Put.class) @RequestBody LessShortItemDto lessShortItemDto,
-                                    @PathVariable Long itemId) throws UserNotFoundException, ItemNotFoundException {
+    public LessShortItemDto patchItem(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                      @Validated(Patch.class) @RequestBody LessShortItemDto lessShortItemDto,
+                                      @PathVariable Long itemId) throws UserNotFoundException, ItemNotFoundException {
         User user = userService.getUserById(userId);
         Item item = itemService.getItemById(itemId);
 
@@ -142,7 +142,8 @@ public class ItemController {
                         .isBefore(LocalDateTime.now()))) {
 
             log.debug("Вещь с itemId = {} не найдена в истории бронирования пользователя с userId {}.", itemId, userId);
-            throw new BookingBadRequestException(String.format("Вещь с itemId = %s не найдена в истории бронирования пользователя с userId %s.", itemId, userId));
+            throw new BookingBadRequestException(String.format("Вещь с itemId = %s не найдена в истории бронирования " +
+                    "пользователя с userId %s.", itemId, userId));
         }
         Comment commentFromDto = CommentMapper.toComment(commentDto);
         commentFromDto.setAuthor(user);

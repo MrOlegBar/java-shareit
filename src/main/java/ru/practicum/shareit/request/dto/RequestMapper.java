@@ -20,9 +20,9 @@ public class RequestMapper {
                 .build();
     }
 
-    public static Request toRequest(ShortRequestDto shortRequestDto) {
+    public static Request toRequest(RequestDtoForRequest requestDtoForRequest) {
         Request request = new Request();
-        request.setDescription(shortRequestDto.getDescription());
+        request.setDescription(requestDtoForRequest.getDescription());
         return request;
     }
 }

@@ -125,7 +125,7 @@ public class ItemControllerTest {
     void shouldReturnCreatedLessShortItemDto() throws Exception {
         when(userService.getUserById(anyLong()))
                 .thenReturn(user);
-        when(itemService.create(any()))
+        when(itemService.create(any(Item.class)))
                 .thenReturn(item);
 
         mockMvc.perform(post("/items")
@@ -151,7 +151,7 @@ public class ItemControllerTest {
                 .thenReturn(item);
         when(requestService.getRequestById(anyLong()))
                 .thenReturn(request);
-        when(itemService.update(any()))
+        when(itemService.update(any(Item.class)))
                 .thenReturn(item);
 
         mockMvc.perform(patch("/items/{itemId}", itemId)
@@ -177,10 +177,7 @@ public class ItemControllerTest {
                 .thenReturn(itemDto);
 
         mockMvc.perform(get("/items/{itemId}", itemId)
-                        .header(headerUserId, userId)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
+                        .header(headerUserId, userId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(itemDto.getId()), Long.class))
                 .andExpect(jsonPath("$.name", is(itemDto.getName())))
@@ -212,10 +209,7 @@ public class ItemControllerTest {
         mockMvc.perform(get("/items")
                         .header(headerUserId, userId)
                         .param(paramFrom, from)
-                        .param(paramSize, size)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
+                        .param(paramSize, size))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id", is(itemDto.getId()), Long.class))
@@ -257,10 +251,7 @@ public class ItemControllerTest {
         mockMvc.perform(get("/items/search")
                         .param(paramText, text)
                         .param(paramFrom, from)
-                        .param(paramSize, size)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
+                        .param(paramSize, size))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id", is(lessShortItemDto.getId()), Long.class))
@@ -298,7 +289,7 @@ public class ItemControllerTest {
                 .thenReturn(item);
         when(bookingService.getAllBookingsByBookerId(anyLong()))
                 .thenReturn(List.of(booking));
-        when(itemService.createComment(any()))
+        when(itemService.createComment(any(Comment.class)))
                 .thenReturn(comment);
 
         mockMvc.perform(post("/items/{itemId}/comment", 1L)

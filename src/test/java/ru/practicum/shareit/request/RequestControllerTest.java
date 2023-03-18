@@ -1,29 +1,30 @@
 package ru.practicum.shareit.request;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.practicum.shareit.error.MethodParametersException;
 import ru.practicum.shareit.item.dto.LessShortItemDto;
 import ru.practicum.shareit.item.dto.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.dto.RequestDto;
+import ru.practicum.shareit.request.dto.RequestDtoForRequest;
 import ru.practicum.shareit.request.dto.RequestMapper;
-import ru.practicum.shareit.request.dto.ShortRequestDto;
 import ru.practicum.shareit.request.service.RequestService;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.service.UserServiceImpl;
 
-import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -43,60 +44,57 @@ public class RequestControllerTest {
     private MockMvc mockMvc;
     @Autowired
     ObjectMapper mapper;
-    private final ShortRequestDto shortRequestDtoForRequest = ShortRequestDto.builder()
+    private final String headerUserId = "X-Sharer-User-Id";
+    private final Long userId = 1L;
+    String paramFrom = "from";
+    String paramSize = "size";
+    String from = "0";
+    String size = "10";
+    private final RequestDtoForRequest requestDtoForRequest = RequestDtoForRequest.builder()
             .description("Хотел бы воспользоваться щёткой для обуви")
             .build();
     private final User user = new User(
             1L,
             "user@user.com",
             "user");
-    private LessShortItemDto lessShortItemDto;
-    private Request requestForDto;
-    private final Request request = new Request();
-    private RequestDto requestDtoForResponse;
-    private final Set<Item> items = new HashSet<>();
-    private final List<Request> requests = new ArrayList<>();
+    private final Item item = new Item(
+            1L,
+            "Дрель",
+            "Простая дрель",
+            true,
+            user,
+            null,
+            new HashSet<>());
+    private final Request request = new Request(
+            1L,
+            "Хотел бы воспользоваться щёткой для обуви",
+            user,
+            Set.of(item));
+    private final RequestDto requestDto = RequestMapper.toRequestDto(request);
+    private final LessShortItemDto lessShortItemDto = ItemMapper.toLessShortItemDto(item);
     private final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-
-    @BeforeEach
-    void setUp() {
-        request.setId(1L);
-
-        Item item = new Item(1L, "Дрель", "Простая дрель", true, user, request,
-                new HashSet<>());
-
-        items.add(item);
-
-        requestForDto = RequestMapper.toRequest(shortRequestDtoForRequest);
-        requestForDto.setId(1L);
-        requestForDto.setRequester(user);
-        requestForDto.setItems(items);
-
-        requests.add(requestForDto);
-
-        lessShortItemDto = ItemMapper.toLessShortItemDto(item);
-
-        requestDtoForResponse = RequestMapper.toRequestDto(requestForDto);
-
-    }
 
     @Test
     void shouldReturnCreatedRequestDto() throws Exception {
         when(userService.getUserById(anyLong()))
                 .thenReturn(user);
         when(requestService.create(any(Request.class)))
-                .thenReturn(requestForDto);
+                .thenReturn(request);
 
         mockMvc.perform(post("/requests")
-                        .header("X-Sharer-User-Id", 1L)
-                        .content(mapper.writeValueAsString(shortRequestDtoForRequest))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
+                        .header(headerUserId, userId)
+                        .content(mapper.writeValueAsString(requestDtoForRequest))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(requestDtoForResponse.getId()), Long.class))
-                .andExpect(jsonPath("$.description", is(requestDtoForResponse.getDescription())))
-                .andExpect(jsonPath("$.created", is(requestDtoForResponse.getCreated().format(formatter))));
+                .andExpect(jsonPath("$.id", is(requestDto.getId()), Long.class))
+                .andExpect(jsonPath("$.description", is(requestDto.getDescription())))
+                .andExpect(jsonPath("$.created", is(requestDto.getCreated().format(formatter))))
+                .andExpect(jsonPath("$.items", hasSize(1)))
+                .andExpect(jsonPath("$.items[0].id", is(lessShortItemDto.getId()), Long.class))
+                .andExpect(jsonPath("$.items[0].name", is(lessShortItemDto.getName())))
+                .andExpect(jsonPath("$.items[0].description", is(lessShortItemDto.getDescription())))
+                .andExpect(jsonPath("$.items[0].available", is(lessShortItemDto.getAvailable())))
+                .andExpect(jsonPath("$.items[0].requestId", is(lessShortItemDto.getRequestId()), Long.class));
     }
 
     @Test
@@ -104,17 +102,15 @@ public class RequestControllerTest {
         when(userService.getUserById(anyLong()))
                 .thenReturn(user);
         when(requestService.getRequestById(anyLong()))
-                .thenReturn(requestForDto);
+                .thenReturn(request);
 
-        mockMvc.perform(get("/requests/{requestId}", 1L)
-                        .header("X-Sharer-User-Id", 1L)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
+        Long requestId = 1L;
+        mockMvc.perform(get("/requests/{requestId}", requestId)
+                        .header(headerUserId, userId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(requestDtoForResponse.getId()), Long.class))
-                .andExpect(jsonPath("$.description", is(requestDtoForResponse.getDescription())))
-                .andExpect(jsonPath("$.created", is(requestDtoForResponse.getCreated().format(formatter))))
+                .andExpect(jsonPath("$.id", is(requestDto.getId()), Long.class))
+                .andExpect(jsonPath("$.description", is(requestDto.getDescription())))
+                .andExpect(jsonPath("$.created", is(requestDto.getCreated().format(formatter))))
                 .andExpect(jsonPath("$.items", hasSize(1)))
                 .andExpect(jsonPath("$.items[0].id", is(lessShortItemDto.getId()), Long.class))
                 .andExpect(jsonPath("$.items[0].name", is(lessShortItemDto.getName())))
@@ -129,18 +125,15 @@ public class RequestControllerTest {
         when(userService.getUserById(anyLong()))
                 .thenReturn(user);
         when(requestService.getAllRequestsByUserId(anyLong()))
-                .thenReturn(requests);
+                .thenReturn(List.of(request));
 
         mockMvc.perform(get("/requests")
-                        .header("X-Sharer-User-Id", 1L)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
+                        .header(headerUserId, userId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is(requestDtoForResponse.getId()), Long.class))
-                .andExpect(jsonPath("$[0].description", is(requestDtoForResponse.getDescription())))
-                .andExpect(jsonPath("$[0].created", is(requestDtoForResponse.getCreated().format(formatter))))
+                .andExpect(jsonPath("$[0].id", is(requestDto.getId()), Long.class))
+                .andExpect(jsonPath("$[0].description", is(requestDto.getDescription())))
+                .andExpect(jsonPath("$[0].created", is(requestDto.getCreated().format(formatter))))
                 .andExpect(jsonPath("$[0].items", hasSize(1)))
                 .andExpect(jsonPath("$[0].items[0].id", is(lessShortItemDto.getId()), Long.class))
                 .andExpect(jsonPath("$[0].items[0].name", is(lessShortItemDto.getName())))
@@ -155,20 +148,17 @@ public class RequestControllerTest {
         when(userService.getUserById(anyLong()))
                 .thenReturn(user);
         when(requestService.getAllItemRequests(anyLong(), anyInt(), anyInt()))
-                .thenReturn(requests);
+                .thenReturn(List.of(request));
 
         mockMvc.perform(get("/requests/all")
-                        .header("X-Sharer-User-Id", 1L)
-                        .param("from", "0")
-                        .param("size", "1")
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
+                        .header(headerUserId, userId)
+                        .param(paramFrom, from)
+                        .param(paramSize, size))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is(requestDtoForResponse.getId()), Long.class))
-                .andExpect(jsonPath("$[0].description", is(requestDtoForResponse.getDescription())))
-                .andExpect(jsonPath("$[0].created", is(requestDtoForResponse.getCreated().format(formatter))))
+                .andExpect(jsonPath("$[0].id", is(requestDto.getId()), Long.class))
+                .andExpect(jsonPath("$[0].description", is(requestDto.getDescription())))
+                .andExpect(jsonPath("$[0].created", is(requestDto.getCreated().format(formatter))))
                 .andExpect(jsonPath("$[0].items", hasSize(1)))
                 .andExpect(jsonPath("$[0].items[0].id", is(lessShortItemDto.getId()), Long.class))
                 .andExpect(jsonPath("$[0].items[0].name", is(lessShortItemDto.getName())))
@@ -176,5 +166,21 @@ public class RequestControllerTest {
                 .andExpect(jsonPath("$[0].items[0].available", is(lessShortItemDto.getAvailable())))
                 .andExpect(jsonPath("$[0].items[0].requestId", is(lessShortItemDto.getRequestId()), Long
                         .class));
+    }
+
+    @Test
+    void shouldReturnMethodParametersExceptionForGetAllRequestsWithPagination() throws Exception {
+        when(userService.getUserById(anyLong()))
+                .thenReturn(user);
+
+        String wrongFrom = "-1";
+        mockMvc.perform(get("/requests/all")
+                        .header(headerUserId, userId)
+                        .param(paramFrom, wrongFrom)
+                        .param(paramSize, size))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof MethodParametersException))
+                .andExpect(result -> assertEquals("Параметры запроса заданы не верно.",
+                        Objects.requireNonNull(result.getResolvedException()).getMessage()));
     }
 }

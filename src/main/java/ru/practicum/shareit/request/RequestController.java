@@ -8,7 +8,7 @@ import ru.practicum.shareit.constraintGroup.Post;
 import ru.practicum.shareit.error.MethodParametersException;
 import ru.practicum.shareit.request.dto.RequestDto;
 import ru.practicum.shareit.request.dto.RequestMapper;
-import ru.practicum.shareit.request.dto.ShortRequestDto;
+import ru.practicum.shareit.request.dto.RequestDtoForRequest;
 import ru.practicum.shareit.request.service.RequestService;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserNotFoundException;
@@ -28,10 +28,10 @@ public class RequestController {
     @PostMapping("/requests")
     public RequestDto postRequest(@RequestHeader("X-Sharer-User-Id") Long userId,
                                   @Validated(Post.class)
-                                  @RequestBody ShortRequestDto shortRequestDto) throws UserNotFoundException {
+                                  @RequestBody RequestDtoForRequest requestDtoForRequest) throws UserNotFoundException {
         User user = userService.getUserById(userId);
 
-        Request requestFromDto = RequestMapper.toRequest(shortRequestDto);
+        Request requestFromDto = RequestMapper.toRequest(requestDtoForRequest);
         requestFromDto.setRequester(user);
         Request requestForDto = requestService.create(requestFromDto);
         return RequestMapper.toRequestDto(requestForDto);

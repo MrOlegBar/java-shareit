@@ -1,31 +1,31 @@
-package ru.practicum.shareit.item;
+package ru.practicum.shareit.request;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.jdbc.Sql;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DataJpaTest
 @Sql("/schema.sql")
-public class ItemRepositoryTest {
+public class RequestRepositoryTest {
+    @Autowired
+    private UserRepository userRepository;
     @Autowired
     private ItemRepository itemRepository;
     @Autowired
-    private UserRepository userRepository;
+    private RequestRepository requestRepository;
     private final long userId = 1L;
-    private final int from = 0;
-    private final int size = 10;
     private final User user = new User(
             "user@user.com",
             "user");
@@ -36,35 +36,32 @@ public class ItemRepositoryTest {
             user,
             null,
             new HashSet<>());
+    private final Request request = new Request(
+            "Хотел бы воспользоваться щёткой для обуви",
+            user,
+            Set.of(item));
 
     @BeforeEach
     void setUp() {
         userRepository.save(user);
         itemRepository.save(item);
+        requestRepository.save(request);
     }
 
     @Test
-    public void shouldReturnItemByOwner_IdAndId() {
-        long itemId = 1L;
+    public void shouldReturnRequestsByRequester_Id() {
+        Collection<Request> actual = requestRepository.findAllByRequester_Id(userId);
 
-        Optional<Item> actual = itemRepository.findItemByOwner_IdAndId(userId, itemId);
-
-        assertEquals(Optional.of(item), actual);
+        assertEquals(List.of(request), actual);
     }
 
     @Test
-    public void shouldReturnAllItemByOwner_Id() {
-        List<Item> actual = itemRepository.findAllByOwner_Id(userId, PageRequest.of(from, size));
+    public void shouldReturnRequestsByRequester_IdWithPagination() {
+        int from = 0;
+        int size = 10;
+        List<Request> actual = requestRepository.findAllByRequester_Id(userId,
+                PageRequest.of(from, size, Sort.Direction.DESC, "created"));
 
-        assertEquals(List.of(item), actual);
-    }
-
-    @Test
-    public void shouldReturnAllItemBySearch() {
-        String text = "дрель";
-
-        List<Item> actual = itemRepository.findAllBySearch(text, PageRequest.of(from, size));
-
-        assertEquals(List.of(item), actual);
+        assertEquals(new ArrayList<>(), actual);
     }
 }

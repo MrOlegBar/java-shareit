@@ -7,7 +7,6 @@ import ru.practicum.shareit.user.User;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -49,11 +48,11 @@ public class Request {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Request request = (Request) o;
-        return id.equals(request.id);
+        return (this.id != null && id.equals(request.id));
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return this.id != null ? this.id.hashCode() : 0;
     }
 }
