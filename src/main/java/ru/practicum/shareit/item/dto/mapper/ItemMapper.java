@@ -21,16 +21,16 @@ public class ItemMapper {
     }
 
     public static ItemDto toItemDto(Item item) {
-        return ItemDto.builder()
-                .id(item.getId())
-                .name(item.getName())
-                .description(item.getDescription())
-                .available(item.getAvailable())
-                .comments(item.getComments()
-                        .stream()
-                        .map(CommentMapper::toCommentDto)
-                        .collect(Collectors.toSet()))
-                .build();
+        ItemDto itemDto = ItemDto.builder().build();
+        itemDto.setId(item.getId());
+        itemDto.setName(item.getName());
+        itemDto.setDescription(item.getDescription());
+        itemDto.setAvailable(item.getAvailable());
+        itemDto.setComments(item.getComments()
+                .stream()
+                .map(CommentMapper::toCommentDto)
+                .collect(Collectors.toSet()));
+        return itemDto;
     }
 
     public static Item toItem(LessShortItemDto lessShortItemDto) {

@@ -80,7 +80,7 @@ public class ItemServiceImpl implements ItemService {
     public List<Item> findItemsBySearch(String text, int from, int size) {
         String lowercaseText = text.toLowerCase();
 
-        return itemRepository.findItemsBySearch(lowercaseText, PageRequest.of(from, size));
+        return itemRepository.findAllBySearch(lowercaseText, PageRequest.of(from, size));
     }
 
     @Override

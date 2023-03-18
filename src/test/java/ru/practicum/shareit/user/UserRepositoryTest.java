@@ -3,6 +3,7 @@ package ru.practicum.shareit.user;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.jdbc.Sql;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -17,12 +18,12 @@ public class UserRepositoryTest {
             "user");
 
     @Test
-    public void saveUser() {
-        user.setEmail("new user@user.com");
+    @DirtiesContext
+    public void shouldReturnCreatedUser() {
         User savedUser = userRepository.save(user);
 
         assertEquals(1, savedUser.getId());
-        assertEquals("new user@user.com", savedUser.getEmail());
+        assertEquals("user@user.com", savedUser.getEmail());
         assertEquals("user", savedUser.getName());
     }
 }

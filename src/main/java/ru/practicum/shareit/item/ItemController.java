@@ -100,8 +100,7 @@ public class ItemController {
     public Collection<ItemDto> getItems(@RequestHeader("X-Sharer-User-Id") Long userId,
                                         @RequestParam(required = false, defaultValue = "0") Integer from,
                                         @RequestParam(required = false, defaultValue = "10") Integer size)
-            throws UserNotFoundException,
-            ItemNotFoundException {
+            throws UserNotFoundException, ItemNotFoundException {
 
         userService.getUserById(userId);
         if (from < 0 || size <= 0) {
@@ -116,14 +115,13 @@ public class ItemController {
     public List<LessShortItemDto> getItemsBySearch(@RequestParam String text,
                                                    @RequestParam(required = false, defaultValue = "0") Integer from,
                                                    @RequestParam(required = false, defaultValue = "10") Integer size) {
+
         if (from < 0 || size <= 0) {
             log.debug("Параметры запроса заданы не верно.");
             throw new MethodParametersException("Параметры запроса заданы не верно.");
         }
 
-        if (text.isEmpty()) {
-            return new ArrayList<>();
-        }
+        if (text.isEmpty()) return new ArrayList<>();
 
         return itemService.findItemsBySearch(text, from, size).stream()
                 .map(ItemMapper::toLessShortItemDto)
@@ -144,10 +142,8 @@ public class ItemController {
                         .isBefore(LocalDateTime.now()))) {
 
             log.debug("Вещь с itemId = {} не найдена в истории бронирования пользователя с userId {}.", itemId, userId);
-            throw new BookingBadRequestException(String.format("Вещь с itemId = %s не найдена в истории бронирования " +
-                    "пользователя с userId %s.", itemId, userId));
+            throw new BookingBadRequestException(String.format("Вещь с itemId = %s не найдена в истории бронирования пользователя с userId %s.", itemId, userId));
         }
-
         Comment commentFromDto = CommentMapper.toComment(commentDto);
         commentFromDto.setAuthor(user);
         commentFromDto.setItem(item);

@@ -8,12 +8,12 @@ import ru.practicum.shareit.user.User;
 @Component
 public class CommentMapper {
     public static CommentDto toCommentDto(Comment comment) {
-        CommentDto commentDto = new CommentDto();
-        commentDto.setId(comment.getId());
-        commentDto.setText(comment.getText());
-        commentDto.setAuthorName(comment.getAuthor().getName());
-        commentDto.setCreated(comment.getCreated());
-        return commentDto;
+        return CommentDto.builder()
+                .id(comment.getId())
+                .text(comment.getText())
+                .authorName(comment.getAuthor().getName())
+                .created(comment.getCreated())
+                .build();
     }
 
     public static Comment toComment(CommentDto commentDto) {

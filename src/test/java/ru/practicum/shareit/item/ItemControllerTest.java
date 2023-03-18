@@ -3,13 +3,13 @@ package ru.practicum.shareit.item;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.booking.dto.ShortBookingDto;
+import ru.practicum.shareit.booking.exception.BookingBadRequestException;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.service.BookingService;
@@ -59,21 +59,29 @@ public class ItemControllerTest {
     private MockMvc mockMvc;
     @Autowired
     ObjectMapper mapper;
-
+    private final String headerUserId = "X-Sharer-User-Id";
+    private final String paramFrom = "from";
+    private final String paramSize = "size";
+    private final String paramText = "text";
+    private final String wrongFrom = "-1";
+    private final String from = "0";
+    private final String size = "10";
+    private final String text = "Дрель";
+    private final Long userId = 1L;
+    private final Long itemId = 1L;
+    private final Request request = new Request();
     private final User user = new User(
             1L,
             "user@user.com",
             "user");
-    private final Request request = new Request();
-    private Item itemForDto = new Item();
-    private final LessShortItemDto lessShortItemDtoRequest = LessShortItemDto.builder()
+    private final LessShortItemDto lessShortItemDto = LessShortItemDto.builder()
+            .id(1L)
             .name("Дрель")
             .description("Простая дрель")
             .available(true)
             .requestId(1L)
             .build();
-    private ItemDto itemDtoForResponse;
-    private LessShortItemDto lessShortItemDtoForResponse;
+    private final Item item = ItemMapper.toItem(lessShortItemDto);
     private final ShortBookingDto lastBooking = ShortBookingDto.builder()
             .id(1L)
             .bookerId(1L)
@@ -82,113 +90,82 @@ public class ItemControllerTest {
             .id(2L)
             .bookerId(1L)
             .build();
-    private CommentDto commentDtoForResponse = new CommentDto();
-    private final CommentDto commentDtoRequest = new CommentDto();
-    private Comment commentForDto = new Comment();
-    private final List<Item> items = new ArrayList<>();
-    private final List<ItemDto> itemsDtoResponse = new ArrayList<>();
-    private final List<Booking> bookings = new ArrayList<>();
-    private final Set<CommentDto> comments = new HashSet<>();
+    private final CommentDto commentDto = CommentDto.builder()
+            .id(1L)
+            .text("Add comment from user1")
+            .authorName("user")
+            .created(LocalDateTime.now())
+            .build();
+    private final Comment comment = CommentMapper.toComment(commentDto);
+    private final ItemDto itemDto = ItemDto.builder()
+            .id(1L)
+            .name("Дрель")
+            .description("Простая дрель")
+            .available(true)
+            .lastBooking(lastBooking)
+            .nextBooking(nextBooking)
+            .comments(Set.of(commentDto))
+            .build();
+    private final Booking booking = new Booking(
+            1L,
+            LocalDateTime.now().minusDays(2L),
+            LocalDateTime.now().minusDays(1L),
+            BookingStatus.APPROVED,
+            item,
+            user);
     private final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     @BeforeEach
     void setUp() {
         request.setId(1L);
-
-        itemForDto = ItemMapper.toItem(lessShortItemDtoRequest);
-        itemForDto.setId(1L);
-        itemForDto.setOwner(user);
-        itemForDto.setRequest(request);
-
-        commentDtoRequest.setText("Add comment from user1");
-
-        commentForDto = CommentMapper.toComment(commentDtoRequest);
-        commentForDto.setId(1L);
-        commentForDto.setAuthor(user);
-        commentForDto.setItem(itemForDto);
-
-        commentDtoForResponse = CommentMapper.toCommentDto(commentForDto);
-
-        comments.add(commentDtoForResponse);
-
-        lessShortItemDtoForResponse = ItemMapper.toLessShortItemDto(itemForDto);
-
-        itemDtoForResponse = ItemMapper.toItemDto(itemForDto);
-        itemDtoForResponse.setLastBooking(lastBooking);
-        itemDtoForResponse.setNextBooking(nextBooking);
-        itemDtoForResponse.setComments(comments);
-
-        itemsDtoResponse.add(itemDtoForResponse);
-
-        items.add(itemForDto);
-
-        Booking booking = new Booking(LocalDateTime.now().minusDays(2L), LocalDateTime.now().minusDays(1L),
-                BookingStatus.APPROVED, itemForDto, user);
-        bookings.add(booking);
+        item.setRequest(request);
     }
 
     @Test
     void shouldReturnCreatedLessShortItemDto() throws Exception {
         when(userService.getUserById(anyLong()))
                 .thenReturn(user);
-        when(requestService.getRequestById(anyLong()))
-                .thenReturn(request);
-        when(itemService.create(any(Item.class)))
-                .thenReturn(itemForDto);
+        when(itemService.create(any()))
+                .thenReturn(item);
 
         mockMvc.perform(post("/items")
-                        .header("X-Sharer-User-Id", 1L)
-                        .content(mapper.writeValueAsString(lessShortItemDtoRequest))
+                        .header(headerUserId, userId)
+                        .content(mapper.writeValueAsString(lessShortItemDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(lessShortItemDtoForResponse.getId()), Long.class))
-                .andExpect(jsonPath("$.name", is(lessShortItemDtoForResponse.getName())))
-                .andExpect(jsonPath("$.description", is(lessShortItemDtoForResponse.getDescription())))
-                .andExpect(jsonPath("$.available", is(lessShortItemDtoForResponse.getAvailable())))
-                .andExpect(jsonPath("$.requestId", is(lessShortItemDtoForResponse.getRequestId()),
+                .andExpect(jsonPath("$.id", is(lessShortItemDto.getId()), Long.class))
+                .andExpect(jsonPath("$.name", is(lessShortItemDto.getName())))
+                .andExpect(jsonPath("$.description", is(lessShortItemDto.getDescription())))
+                .andExpect(jsonPath("$.available", is(lessShortItemDto.getAvailable())))
+                .andExpect(jsonPath("$.requestId", is(lessShortItemDto.getRequestId()),
                         Long.class));
     }
 
     @Test
     void shouldReturnPatchedLessShortItemDto() throws Exception {
-        lessShortItemDtoRequest.setName("Дрель+");
-        lessShortItemDtoRequest.setDescription("Аккумуляторная дрель");
-        lessShortItemDtoRequest.setAvailable(false);
-        lessShortItemDtoRequest.setRequestId(request.getId());
-
         when(userService.getUserById(anyLong()))
                 .thenReturn(user);
         when(itemService.getItemById(anyLong()))
-                .thenReturn(itemForDto);
+                .thenReturn(item);
         when(requestService.getRequestById(anyLong()))
                 .thenReturn(request);
+        when(itemService.update(any()))
+                .thenReturn(item);
 
-        request.setId(2L);
-
-        itemForDto.setName("Дрель+");
-        itemForDto.setDescription("Аккумуляторная дрель");
-        itemForDto.setAvailable(false);
-        itemForDto.setRequest(request);
-
-        when(itemService.update(any(Item.class)))
-                .thenReturn(itemForDto);
-
-        lessShortItemDtoForResponse = ItemMapper.toLessShortItemDto(itemForDto);
-
-        mockMvc.perform(patch("/items/{itemId}", 1L)
-                        .header("X-Sharer-User-Id", 1L)
-                        .content(mapper.writeValueAsString(lessShortItemDtoRequest))
+        mockMvc.perform(patch("/items/{itemId}", itemId)
+                        .header(headerUserId, userId)
+                        .content(mapper.writeValueAsString(lessShortItemDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(lessShortItemDtoForResponse.getId()), Long.class))
-                .andExpect(jsonPath("$.name", is(lessShortItemDtoForResponse.getName())))
-                .andExpect(jsonPath("$.description", is(lessShortItemDtoForResponse.getDescription())))
-                .andExpect(jsonPath("$.available", is(lessShortItemDtoForResponse.getAvailable())))
-                .andExpect(jsonPath("$.requestId", is(lessShortItemDtoForResponse.getRequestId()),
+                .andExpect(jsonPath("$.id", is(lessShortItemDto.getId()), Long.class))
+                .andExpect(jsonPath("$.name", is(lessShortItemDto.getName())))
+                .andExpect(jsonPath("$.description", is(lessShortItemDto.getDescription())))
+                .andExpect(jsonPath("$.available", is(lessShortItemDto.getAvailable())))
+                .andExpect(jsonPath("$.requestId", is(lessShortItemDto.getRequestId()),
                         Long.class));
     }
 
@@ -197,31 +174,31 @@ public class ItemControllerTest {
         when(userService.getUserById(anyLong()))
                 .thenReturn(user);
         when(itemService.getItemDtoByOwnerIdAndItemId(anyLong(), anyLong()))
-                .thenReturn(itemDtoForResponse);
+                .thenReturn(itemDto);
 
-        mockMvc.perform(get("/items/{itemId}", 1L)
-                        .header("X-Sharer-User-Id", 1L)
+        mockMvc.perform(get("/items/{itemId}", itemId)
+                        .header(headerUserId, userId)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(itemDtoForResponse.getId()), Long.class))
-                .andExpect(jsonPath("$.name", is(itemDtoForResponse.getName())))
-                .andExpect(jsonPath("$.description", is(itemDtoForResponse.getDescription())))
-                .andExpect(jsonPath("$.available", is(itemDtoForResponse.getAvailable())))
-                .andExpect(jsonPath("$.lastBooking.id", is(itemDtoForResponse.getLastBooking().getId()),
+                .andExpect(jsonPath("$.id", is(itemDto.getId()), Long.class))
+                .andExpect(jsonPath("$.name", is(itemDto.getName())))
+                .andExpect(jsonPath("$.description", is(itemDto.getDescription())))
+                .andExpect(jsonPath("$.available", is(itemDto.getAvailable())))
+                .andExpect(jsonPath("$.lastBooking.id", is(itemDto.getLastBooking().getId()),
                         Long.class))
-                .andExpect(jsonPath("$.lastBooking.bookerId", is(itemDtoForResponse.getLastBooking()
+                .andExpect(jsonPath("$.lastBooking.bookerId", is(itemDto.getLastBooking()
                         .getBookerId()), Long.class))
-                .andExpect(jsonPath("$.nextBooking.id", is(itemDtoForResponse.getNextBooking().getId()),
+                .andExpect(jsonPath("$.nextBooking.id", is(itemDto.getNextBooking().getId()),
                         Long.class))
-                .andExpect(jsonPath("$.nextBooking.bookerId", is(itemDtoForResponse.getNextBooking()
+                .andExpect(jsonPath("$.nextBooking.bookerId", is(itemDto.getNextBooking()
                         .getBookerId()), Long.class))
                 .andExpect(jsonPath("$.comments", hasSize(1)))
-                .andExpect(jsonPath("$.comments[0].id", is(commentDtoForResponse.getId()), Long.class))
-                .andExpect(jsonPath("$.comments[0].text", is(commentDtoForResponse.getText())))
-                .andExpect(jsonPath("$.comments[0].authorName", is(commentDtoForResponse.getAuthorName())))
-                .andExpect(jsonPath("$.comments[0].created", is(commentDtoForResponse.getCreated()
+                .andExpect(jsonPath("$.comments[0].id", is(commentDto.getId()), Long.class))
+                .andExpect(jsonPath("$.comments[0].text", is(commentDto.getText())))
+                .andExpect(jsonPath("$.comments[0].authorName", is(commentDto.getAuthorName())))
+                .andExpect(jsonPath("$.comments[0].created", is(commentDto.getCreated()
                         .format(formatter))));
     }
 
@@ -230,49 +207,42 @@ public class ItemControllerTest {
         when(userService.getUserById(anyLong()))
                 .thenReturn(user);
         when(itemService.getAllItemsDtoByOwnerId(anyLong(), anyInt(), anyInt()))
-                .thenReturn(itemsDtoResponse);
+                .thenReturn(List.of(itemDto));
 
         mockMvc.perform(get("/items")
-                        .header("X-Sharer-User-Id", 1L)
-                        .param("from", "0")
-                        .param("size", "10")
+                        .header(headerUserId, userId)
+                        .param(paramFrom, from)
+                        .param(paramSize, size)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is(itemDtoForResponse.getId()), Long.class))
-                .andExpect(jsonPath("$[0].name", is(itemDtoForResponse.getName())))
-                .andExpect(jsonPath("$[0].description", is(itemDtoForResponse.getDescription())))
-                .andExpect(jsonPath("$[0].available", is(itemDtoForResponse.getAvailable())))
-                .andExpect(jsonPath("$[0].lastBooking.id", is(itemDtoForResponse.getLastBooking().getId()),
+                .andExpect(jsonPath("$[0].id", is(itemDto.getId()), Long.class))
+                .andExpect(jsonPath("$[0].name", is(itemDto.getName())))
+                .andExpect(jsonPath("$[0].description", is(itemDto.getDescription())))
+                .andExpect(jsonPath("$[0].available", is(itemDto.getAvailable())))
+                .andExpect(jsonPath("$[0].lastBooking.id", is(itemDto.getLastBooking().getId()),
                         Long.class))
-                .andExpect(jsonPath("$[0].lastBooking.bookerId", is(itemDtoForResponse.getLastBooking()
+                .andExpect(jsonPath("$[0].lastBooking.bookerId", is(itemDto.getLastBooking()
                         .getBookerId()), Long.class))
-                .andExpect(jsonPath("$[0].nextBooking.id", is(itemDtoForResponse.getNextBooking().getId()),
+                .andExpect(jsonPath("$[0].nextBooking.id", is(itemDto.getNextBooking().getId()),
                         Long.class))
-                .andExpect(jsonPath("$[0].nextBooking.bookerId", is(itemDtoForResponse.getNextBooking()
+                .andExpect(jsonPath("$[0].nextBooking.bookerId", is(itemDto.getNextBooking()
                         .getBookerId()), Long.class))
                 .andExpect(jsonPath("$[0].comments", hasSize(1)))
-                .andExpect(jsonPath("$[0].comments[0].id", is(commentDtoForResponse.getId()), Long.class))
-                .andExpect(jsonPath("$[0].comments[0].text", is(commentDtoForResponse.getText())))
-                .andExpect(jsonPath("$[0].comments[0].authorName", is(commentDtoForResponse.getAuthorName())))
-                .andExpect(jsonPath("$[0].comments[0].created", is(commentDtoForResponse.getCreated()
+                .andExpect(jsonPath("$[0].comments[0].id", is(commentDto.getId()), Long.class))
+                .andExpect(jsonPath("$[0].comments[0].text", is(commentDto.getText())))
+                .andExpect(jsonPath("$[0].comments[0].authorName", is(commentDto.getAuthorName())))
+                .andExpect(jsonPath("$[0].comments[0].created", is(commentDto.getCreated()
                         .format(formatter))));
     }
 
     @Test
-    void shouldReturnMethodParametersException() throws Exception {
-        Mockito.when(itemService.getAllItemsDtoByOwnerId(1L, -1, 10))
-                .thenThrow(new MethodParametersException("Параметры запроса заданы не верно."));
-
+    void shouldReturnMethodParametersExceptionForGetItems() throws Exception {
         mockMvc.perform(get("/items")
-                        .header("X-Sharer-User-Id", 1L)
-                        .param("from", "-1")
-                        .param("size", "10")
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
+                        .header(headerUserId, userId)
+                        .param(paramFrom, wrongFrom))
                 .andExpect(status().isBadRequest())
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof MethodParametersException))
                 .andExpect(result -> assertEquals("Параметры запроса заданы не верно.",
@@ -282,23 +252,42 @@ public class ItemControllerTest {
     @Test
     void shouldReturnAllLessShortItemDtoBySearch() throws Exception {
         when(itemService.findItemsBySearch(anyString(), anyInt(), anyInt()))
-                .thenReturn(items);
+                .thenReturn(List.of(item));
 
         mockMvc.perform(get("/items/search")
-                        .param("text", "Дрель")
-                        .param("from", "0")
-                        .param("size", "10")
+                        .param(paramText, text)
+                        .param(paramFrom, from)
+                        .param(paramSize, size)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is(lessShortItemDtoForResponse.getId()), Long.class))
-                .andExpect(jsonPath("$[0].name", is(lessShortItemDtoForResponse.getName())))
-                .andExpect(jsonPath("$[0].description", is(lessShortItemDtoForResponse.getDescription())))
-                .andExpect(jsonPath("$[0].available", is(lessShortItemDtoForResponse.getAvailable())))
-                .andExpect(jsonPath("$[0].requestId", is(lessShortItemDtoForResponse.getRequestId()),
+                .andExpect(jsonPath("$[0].id", is(lessShortItemDto.getId()), Long.class))
+                .andExpect(jsonPath("$[0].name", is(lessShortItemDto.getName())))
+                .andExpect(jsonPath("$[0].description", is(lessShortItemDto.getDescription())))
+                .andExpect(jsonPath("$[0].available", is(lessShortItemDto.getAvailable())))
+                .andExpect(jsonPath("$[0].requestId", is(lessShortItemDto.getRequestId()),
                         Long.class));
+    }
+
+    @Test
+    void shouldReturnMethodParametersExceptionForGetItemsBySearch() throws Exception {
+        mockMvc.perform(get("/items/search")
+                        .param(paramText, text)
+                        .param(paramFrom, wrongFrom))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof MethodParametersException))
+                .andExpect(result -> assertEquals("Параметры запроса заданы не верно.",
+                        Objects.requireNonNull(result.getResolvedException()).getMessage()));
+    }
+
+    @Test
+    void shouldReturnEmptyArrayList() throws Exception {
+        mockMvc.perform(get("/items/search")
+                        .param(paramText, ""))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
     }
 
     @Test
@@ -306,22 +295,44 @@ public class ItemControllerTest {
         when(userService.getUserById(anyLong()))
                 .thenReturn(user);
         when(itemService.getItemById(anyLong()))
-                .thenReturn(itemForDto);
+                .thenReturn(item);
         when(bookingService.getAllBookingsByBookerId(anyLong()))
-                .thenReturn(bookings);
-        when(itemService.createComment(any(Comment.class)))
-                .thenReturn(commentForDto);
+                .thenReturn(List.of(booking));
+        when(itemService.createComment(any()))
+                .thenReturn(comment);
 
         mockMvc.perform(post("/items/{itemId}/comment", 1L)
-                        .header("X-Sharer-User-Id", 1L)
-                        .content(mapper.writeValueAsString(commentDtoRequest))
+                        .header(headerUserId, 1L)
+                        .content(mapper.writeValueAsString(commentDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(commentDtoForResponse.getId()), Long.class))
-                .andExpect(jsonPath("$.text", is(commentDtoForResponse.getText())))
-                .andExpect(jsonPath("$.authorName", is(commentDtoForResponse.getAuthorName())))
-                .andExpect(jsonPath("$.created", is(commentDtoForResponse.getCreated().format(formatter))));
+                .andExpect(jsonPath("$.id", is(commentDto.getId()), Long.class))
+                .andExpect(jsonPath("$.text", is(commentDto.getText())))
+                .andExpect(jsonPath("$.authorName", is(commentDto.getAuthorName())))
+                .andExpect(jsonPath("$.created", is(commentDto.getCreated().format(formatter))));
+    }
+
+    @Test
+    void shouldReturnBookingBadRequestException() throws Exception {
+        long failItemId = 2;
+
+        when(userService.getUserById(anyLong()))
+                .thenReturn(user);
+        when(itemService.getItemById(anyLong()))
+                .thenReturn(item);
+        when(bookingService.getAllBookingsByBookerId(anyLong()))
+                .thenReturn(List.of(booking));
+
+        mockMvc.perform(post("/items/{itemId}/comment", failItemId)
+                        .header(headerUserId, userId)
+                        .content(mapper.writeValueAsString(commentDto))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof BookingBadRequestException))
+                .andExpect(result -> assertEquals(String.format("Вещь с itemId = %s не найдена в истории бронирования " +
+                                "пользователя с userId %s.", failItemId, userId),
+                        Objects.requireNonNull(result.getResolvedException()).getMessage()));
     }
 }
