@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,6 +12,7 @@ import javax.validation.constraints.NotNull;
 @Builder
 @Getter
 @Setter
+@AllArgsConstructor
 public class LessShortItemDto {
     private Long id;
     @NotBlank(message = "Название вещи отсутствует или представлено пустым символом.", groups = Post.class)
@@ -19,4 +21,5 @@ public class LessShortItemDto {
     private String description;
     @NotNull(message = "Статус доступности вещи отсутствует.", groups = Post.class)
     private Boolean available;
+    private Long requestId;
 }

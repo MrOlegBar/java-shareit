@@ -1,8 +1,8 @@
 package ru.practicum.shareit.item.model;
 
 import lombok.*;
+import ru.practicum.shareit.request.Request;
 import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.base.BaseModel;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -14,40 +14,46 @@ import java.util.Set;
 @Setter
 @ToString
 @NoArgsConstructor
-public class Item extends BaseModel<Long> {
+@AllArgsConstructor
+public class Item {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
     @Column(name = "name")
     private String name;
     @Column(name = "description")
     private String description;
     @Column(name = "available")
     private Boolean available;
-    private User owner;
-    private Set<Comment> comments = new HashSet<>();
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    @Override
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     @ManyToOne
     @JoinColumn(name = "owner_id")
-    public User getOwner() {
-        return owner;
-    }
-
+    private User owner;
+    @ManyToOne
+    @JoinColumn(name = "request_id")
+    private Request request;
     @OneToMany(mappedBy = "item")
-    public Set<Comment> getComments() {
-        return comments;
+    private Set<Comment> comments = new HashSet<>();
+
+    public Item(String name, String description, Boolean available, User owner, Request request, Set<Comment> comments) {
+        this.name = name;
+        this.description = description;
+        this.available = available;
+        this.owner = owner;
+        this.request = request;
+        this.comments = comments;
     }
 
-    public void setComments(Set<Comment> comments) {
-        this.comments = comments;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Item item = (Item) o;
+        return (this.id != null && id.equals(item.id));
+    }
+
+    @Override
+    public int hashCode() {
+        return this.id != null ? this.id.hashCode() : 0;
     }
 }

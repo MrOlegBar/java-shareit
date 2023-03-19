@@ -1,8 +1,6 @@
 package ru.practicum.shareit.item.dto;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import ru.practicum.shareit.booking.dto.ShortBookingDto;
 import ru.practicum.shareit.constraintGroup.Post;
 
@@ -13,6 +11,7 @@ import java.util.Set;
 @Builder
 @Getter
 @Setter
+@AllArgsConstructor
 public class ItemDto {
     private Long id;
     @NotBlank(message = "Название вещи отсутствует или представлено пустым символом.", groups = Post.class)
@@ -24,4 +23,17 @@ public class ItemDto {
     private ShortBookingDto lastBooking;
     private ShortBookingDto nextBooking;
     private Set<CommentDto> comments;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ItemDto itemDto = (ItemDto) o;
+        return (this.id != null && id.equals(itemDto.id));
+    }
+
+    @Override
+    public int hashCode() {
+        return this.id != null ? this.id.hashCode() : 0;
+    }
 }

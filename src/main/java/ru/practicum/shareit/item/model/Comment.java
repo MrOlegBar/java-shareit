@@ -1,7 +1,7 @@
 package ru.practicum.shareit.item.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
-import ru.practicum.shareit.base.BaseModel;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
@@ -12,43 +12,47 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @ToString
-public class Comment extends BaseModel<Long> {
-    @Column(name = "text")
-    private String text;
-    private User author;
-    @Column(name = "created")
-    private LocalDateTime created;
-    private Item item;
-
+@NoArgsConstructor
+public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    @Override
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
+    private Long id;
+    @Column(name = "text")
+    private String text;
     @ManyToOne
     @JoinColumn(name = "authorName_id")
-    public User getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(User authorName) {
-        this.author = authorName;
-    }
-
+    private User author;
+    @Column(name = "created", nullable = false, updatable = false)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd@HH:mm:ss")
+    private LocalDateTime created = LocalDateTime.now();
     @ManyToOne
     @JoinColumn(name = "item_id")
-    public Item getItem() {
-        return item;
+    private Item item;
+
+    public Comment(Long id, String text, User author, Item item) {
+        this.id = id;
+        this.text = text;
+        this.author = author;
+        this.item = item;
     }
 
-    public void setItem(Item item) {
+    public Comment(String text, User author, Item item) {
+        this.text = text;
+        this.author = author;
         this.item = item;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Comment comment = (Comment) o;
+        return (this.id != null && id.equals(comment.id));
+    }
+
+    @Override
+    public int hashCode() {
+        return this.id != null ? this.id.hashCode() : 0;
     }
 }

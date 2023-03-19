@@ -1,4 +1,4 @@
 package ru.practicum.shareit.constraintGroup;
 
-public interface Put {
+public interface Patch {
 }
