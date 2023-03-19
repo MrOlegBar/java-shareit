@@ -11,7 +11,7 @@ import java.util.HashSet;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
-public class LessShortItemDtoTest {
+class LessShortItemDtoTest {
     private final LessShortItemDto lessShortItemDto = LessShortItemDto.builder().build();
     private final LessShortItemDto lessShortItemDtoExpected = LessShortItemDto.builder()
             .id(1L)

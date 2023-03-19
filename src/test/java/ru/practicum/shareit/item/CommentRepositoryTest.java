@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DataJpaTest
 @Sql("/schema.sql")
-public class CommentRepositoryTest {
+class CommentRepositoryTest {
     @Autowired
     private CommentRepository commentRepository;
     @Autowired

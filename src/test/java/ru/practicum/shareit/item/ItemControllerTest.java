@@ -3,11 +3,15 @@ package ru.practicum.shareit.item;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import ru.practicum.shareit.booking.dto.ShortBookingDto;
 import ru.practicum.shareit.booking.exception.BookingBadRequestException;
 import ru.practicum.shareit.booking.model.Booking;
@@ -45,7 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ItemController.class)
-public class ItemControllerTest {
+class ItemControllerTest {
     @MockBean
     private ItemService itemService;
     @MockBean
@@ -62,11 +66,7 @@ public class ItemControllerTest {
     private final String headerUserId = "X-Sharer-User-Id";
     private final String paramFrom = "from";
     private final String paramSize = "size";
-    private final String paramText = "text";
-    private final String wrongFrom = "-1";
-    private final String from = "0";
     private final String size = "10";
-    private final String text = "Дрель";
     private final Long userId = 1L;
     private final Long itemId = 1L;
     private final Request request = new Request();
@@ -199,90 +199,84 @@ public class ItemControllerTest {
                         .format(formatter))));
     }
 
-    @Test
-    void shouldReturnAllItemsDto() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"-1", "0"})
+    void shouldReturnAllItemsDto(String from) throws Exception {
         when(userService.getUserById(anyLong()))
                 .thenReturn(user);
         when(itemService.getAllItemsDtoByOwnerId(anyLong(), anyInt(), anyInt()))
                 .thenReturn(List.of(itemDto));
 
-        mockMvc.perform(get("/items")
-                        .header(headerUserId, userId)
-                        .param(paramFrom, from)
-                        .param(paramSize, size))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is(itemDto.getId()), Long.class))
-                .andExpect(jsonPath("$[0].name", is(itemDto.getName())))
-                .andExpect(jsonPath("$[0].description", is(itemDto.getDescription())))
-                .andExpect(jsonPath("$[0].available", is(itemDto.getAvailable())))
-                .andExpect(jsonPath("$[0].lastBooking.id", is(itemDto.getLastBooking().getId()),
-                        Long.class))
-                .andExpect(jsonPath("$[0].lastBooking.bookerId", is(itemDto.getLastBooking()
-                        .getBookerId()), Long.class))
-                .andExpect(jsonPath("$[0].nextBooking.id", is(itemDto.getNextBooking().getId()),
-                        Long.class))
-                .andExpect(jsonPath("$[0].nextBooking.bookerId", is(itemDto.getNextBooking()
-                        .getBookerId()), Long.class))
-                .andExpect(jsonPath("$[0].comments", hasSize(1)))
-                .andExpect(jsonPath("$[0].comments[0].id", is(commentDto.getId()), Long.class))
-                .andExpect(jsonPath("$[0].comments[0].text", is(commentDto.getText())))
-                .andExpect(jsonPath("$[0].comments[0].authorName", is(commentDto.getAuthorName())))
-                .andExpect(jsonPath("$[0].comments[0].created", is(commentDto.getCreated()
-                        .format(formatter))));
+        ResultActions resultActions = mockMvc.perform(get("/items")
+                .header(headerUserId, userId)
+                .param(paramFrom, from)
+                .param(paramSize, size));
+
+        if (from.equals("-1")) {
+            resultActions.andExpect(status().isBadRequest())
+                    .andExpect(result -> assertTrue(result.getResolvedException() instanceof MethodParametersException))
+                    .andExpect(result -> assertEquals("Параметры запроса заданы не верно.",
+                            Objects.requireNonNull(result.getResolvedException()).getMessage()));
+        } else {
+            resultActions.andExpect(status().isOk())
+                    .andExpect(jsonPath("$", hasSize(1)))
+                    .andExpect(jsonPath("$[0].id", is(itemDto.getId()), Long.class))
+                    .andExpect(jsonPath("$[0].name", is(itemDto.getName())))
+                    .andExpect(jsonPath("$[0].description", is(itemDto.getDescription())))
+                    .andExpect(jsonPath("$[0].available", is(itemDto.getAvailable())))
+                    .andExpect(jsonPath("$[0].lastBooking.id", is(itemDto.getLastBooking().getId()),
+                            Long.class))
+                    .andExpect(jsonPath("$[0].lastBooking.bookerId", is(itemDto.getLastBooking()
+                            .getBookerId()), Long.class))
+                    .andExpect(jsonPath("$[0].nextBooking.id", is(itemDto.getNextBooking().getId()),
+                            Long.class))
+                    .andExpect(jsonPath("$[0].nextBooking.bookerId", is(itemDto.getNextBooking()
+                            .getBookerId()), Long.class))
+                    .andExpect(jsonPath("$[0].comments", hasSize(1)))
+                    .andExpect(jsonPath("$[0].comments[0].id", is(commentDto.getId()), Long.class))
+                    .andExpect(jsonPath("$[0].comments[0].text", is(commentDto.getText())))
+                    .andExpect(jsonPath("$[0].comments[0].authorName", is(commentDto.getAuthorName())))
+                    .andExpect(jsonPath("$[0].comments[0].created", is(commentDto.getCreated()
+                            .format(formatter))));
+
+        }
+
     }
 
-    @Test
-    void shouldReturnMethodParametersExceptionForGetItems() throws Exception {
-        mockMvc.perform(get("/items")
-                        .header(headerUserId, userId)
-                        .param(paramFrom, wrongFrom))
-                .andExpect(status().isBadRequest())
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof MethodParametersException))
-                .andExpect(result -> assertEquals("Параметры запроса заданы не верно.",
-                        Objects.requireNonNull(result.getResolvedException()).getMessage()));
-    }
-
-    @Test
-    void shouldReturnAllLessShortItemDtoBySearch() throws Exception {
+    @ParameterizedTest
+    @CsvSource(value = {"-1:Дрель", "0:Дрель", "0:''"}, delimiter = ':')
+    void shouldReturnAllLessShortItemDtoBySearch(String from, String text) throws Exception {
         when(itemService.findItemsBySearch(anyString(), anyInt(), anyInt()))
                 .thenReturn(List.of(item));
 
-        mockMvc.perform(get("/items/search")
-                        .param(paramText, text)
-                        .param(paramFrom, from)
-                        .param(paramSize, size))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is(lessShortItemDto.getId()), Long.class))
-                .andExpect(jsonPath("$[0].name", is(lessShortItemDto.getName())))
-                .andExpect(jsonPath("$[0].description", is(lessShortItemDto.getDescription())))
-                .andExpect(jsonPath("$[0].available", is(lessShortItemDto.getAvailable())))
-                .andExpect(jsonPath("$[0].requestId", is(lessShortItemDto.getRequestId()),
-                        Long.class));
+        String paramText = "text";
+        ResultActions resultActions = mockMvc.perform(get("/items/search")
+                .param(paramText, text)
+                .param(paramFrom, from)
+                .param(paramSize, size));
+        if (from.equals("-1")) {
+            resultActions.andExpect(status().isBadRequest())
+                    .andExpect(result -> assertTrue(result.getResolvedException() instanceof MethodParametersException))
+                    .andExpect(result -> assertEquals("Параметры запроса заданы не верно.",
+                            Objects.requireNonNull(result.getResolvedException()).getMessage()));
+        } else if (text.equals("")) {
+            resultActions.andExpect(status().isOk())
+                    .andExpect(jsonPath("$", hasSize(0)));
+        } else {
+            resultActions.andExpect(status().isOk())
+                    .andExpect(jsonPath("$", hasSize(1)))
+                    .andExpect(jsonPath("$[0].id", is(lessShortItemDto.getId()), Long.class))
+                    .andExpect(jsonPath("$[0].name", is(lessShortItemDto.getName())))
+                    .andExpect(jsonPath("$[0].description", is(lessShortItemDto.getDescription())))
+                    .andExpect(jsonPath("$[0].available", is(lessShortItemDto.getAvailable())))
+                    .andExpect(jsonPath("$[0].requestId", is(lessShortItemDto.getRequestId()),
+                            Long.class));
+        }
     }
 
-    @Test
-    void shouldReturnMethodParametersExceptionForGetItemsBySearch() throws Exception {
-        mockMvc.perform(get("/items/search")
-                        .param(paramText, text)
-                        .param(paramFrom, wrongFrom))
-                .andExpect(status().isBadRequest())
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof MethodParametersException))
-                .andExpect(result -> assertEquals("Параметры запроса заданы не верно.",
-                        Objects.requireNonNull(result.getResolvedException()).getMessage()));
-    }
-
-    @Test
-    void shouldReturnEmptyArrayList() throws Exception {
-        mockMvc.perform(get("/items/search")
-                        .param(paramText, ""))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
-    }
-
-    @Test
-    void shouldReturnCommentDto() throws Exception {
+    @ParameterizedTest
+    @ValueSource(longs = {2L, 1L})
+    void shouldReturnCommentDto(long itemId) throws Exception {
         when(userService.getUserById(anyLong()))
                 .thenReturn(user);
         when(itemService.getItemById(anyLong()))
@@ -292,38 +286,24 @@ public class ItemControllerTest {
         when(itemService.createComment(any(Comment.class)))
                 .thenReturn(comment);
 
-        mockMvc.perform(post("/items/{itemId}/comment", 1L)
-                        .header(headerUserId, 1L)
-                        .content(mapper.writeValueAsString(commentDto))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(commentDto.getId()), Long.class))
-                .andExpect(jsonPath("$.text", is(commentDto.getText())))
-                .andExpect(jsonPath("$.authorName", is(commentDto.getAuthorName())))
-                .andExpect(jsonPath("$.created", is(commentDto.getCreated().format(formatter))));
-    }
-
-    @Test
-    void shouldReturnBookingBadRequestException() throws Exception {
-        long failItemId = 2;
-
-        when(userService.getUserById(anyLong()))
-                .thenReturn(user);
-        when(itemService.getItemById(anyLong()))
-                .thenReturn(item);
-        when(bookingService.getAllBookingsByBookerId(anyLong()))
-                .thenReturn(List.of(booking));
-
-        mockMvc.perform(post("/items/{itemId}/comment", failItemId)
-                        .header(headerUserId, userId)
-                        .content(mapper.writeValueAsString(commentDto))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof BookingBadRequestException))
-                .andExpect(result -> assertEquals(String.format("Вещь с itemId = %s не найдена в истории бронирования " +
-                                "пользователя с userId %s.", failItemId, userId),
-                        Objects.requireNonNull(result.getResolvedException()).getMessage()));
+        ResultActions resultActions = mockMvc.perform(post("/items/{itemId}/comment", itemId)
+                .header(headerUserId, userId)
+                .content(mapper.writeValueAsString(commentDto))
+                .characterEncoding(StandardCharsets.UTF_8)
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON));
+        if (itemId == 2) {
+            resultActions.andExpect(status().isBadRequest())
+                    .andExpect(result -> assertTrue(result.getResolvedException() instanceof BookingBadRequestException))
+                    .andExpect(result -> assertEquals(String.format("Вещь с itemId = %s не найдена в истории бронирования " +
+                                    "пользователя с userId %s.", 2L, userId),
+                            Objects.requireNonNull(result.getResolvedException()).getMessage()));
+        } else {
+            resultActions.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.id", is(commentDto.getId()), Long.class))
+                    .andExpect(jsonPath("$.text", is(commentDto.getText())))
+                    .andExpect(jsonPath("$.authorName", is(commentDto.getAuthorName())))
+                    .andExpect(jsonPath("$.created", is(commentDto.getCreated().format(formatter))));
+        }
     }
 }

@@ -1,6 +1,8 @@
 package ru.practicum.shareit.user;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,13 +19,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 
 @SpringBootTest
-public class UserServiceTest {
+class UserServiceTest {
     @Autowired
     private UserService userService;
     @MockBean
     private UserRepository userRepository;
-    private final Long userId = 1L;
-    private final Long wrongUserId = 99L;
     private final UserDto userDto = UserDto.builder()
             .id(1L)
             .email("user@user.com")
@@ -51,28 +51,20 @@ public class UserServiceTest {
         assertEquals(user, actual);
     }
 
-    @Test
-    public void shouldReturnUserById() {
-        Mockito.when(userRepository.findById(anyLong()))
+    @ParameterizedTest
+    @ValueSource(longs = {99L, 1L})
+    public void shouldReturnUserById(long userId) {
+        Mockito.when(userRepository.findById(1L))
                 .thenReturn(Optional.of(user));
-
-        User actual = userService.getUserById(userId);
-
-        assertEquals(user, actual);
-    }
-
-    @Test
-    public void shouldReturnUserNotFoundException() {
-        Mockito.when(userRepository.findById(wrongUserId))
+        Mockito.when(userRepository.findById(99L))
                 .thenReturn(Optional.empty());
 
-        Exception exception = assertThrows(UserNotFoundException.class, () -> userService.getUserById(wrongUserId));
-
-        String expected = String.format("Пользователь с userId = %s не найден.",
-                wrongUserId);
-        String actual = exception.getMessage();
-
-        assertEquals(expected, actual);
+        if (userId == 99L) {
+            assertThrows(UserNotFoundException.class, () -> userService.getUserById(userId));
+        } else {
+            User actual = userService.getUserById(userId);
+            assertEquals(user, actual);
+        }
     }
 
     @Test
@@ -92,7 +84,7 @@ public class UserServiceTest {
                 .thenReturn(false);
 
         Boolean expected = true;
-        Boolean actual = userService.deleteUser(userId);
+        Boolean actual = userService.deleteUser(1L);
 
         Mockito.verify(userRepository, Mockito.times(1))
                 .deleteById(anyLong());

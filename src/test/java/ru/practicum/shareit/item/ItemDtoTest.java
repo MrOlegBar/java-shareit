@@ -11,7 +11,7 @@ import java.util.HashSet;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-public class ItemDtoTest {
+class ItemDtoTest {
     private final ItemDto itemDtoExpected = ItemDto.builder().build();
     private final Item item = new Item();
     private final ItemDto itemDtoOne = ItemDto.builder()

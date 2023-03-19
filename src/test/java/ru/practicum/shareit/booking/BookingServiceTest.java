@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 
 @SpringBootTest
-public class BookingServiceTest {
+class BookingServiceTest {
     @Autowired
     private BookingService bookingService;
     @MockBean

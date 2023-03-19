@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(RequestController.class)
-public class RequestControllerTest {
+class RequestControllerTest {
     @MockBean
     private UserServiceImpl userService;
 

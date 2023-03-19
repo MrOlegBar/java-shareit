@@ -8,7 +8,7 @@ import ru.practicum.shareit.user.dto.UserMapper;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
-public class UserDtoTest {
+class UserDtoTest {
     private final UserDto userDto = UserDto.builder().build();
     private final UserDto userDtoExpected = new UserDto(
             1L,

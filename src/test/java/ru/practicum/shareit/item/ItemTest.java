@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 @SpringBootTest
-public class ItemTest {
+class ItemTest {
     private final Item itemOne = new Item(
             "Дрель",
             "Простая дрель",

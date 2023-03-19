@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
-public class CommentDtoTest {
+class CommentDtoTest {
     private final User user = new User(
             1L,
             "user@user.com",

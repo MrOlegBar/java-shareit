@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 @SpringBootTest
-public class CommentTest {
+class CommentTest {
     private final Comment commentOne = new Comment(
             "Add comment from user1",
             null,

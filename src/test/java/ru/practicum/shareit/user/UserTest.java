@@ -6,7 +6,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-public class UserTest {
+class UserTest {
     private final User userOne = new User(
             1L,
             "user@user.com",

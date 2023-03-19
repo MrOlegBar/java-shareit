@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 
 @SpringBootTest
-public class ItemServiceTest {
+class ItemServiceTest {
     @Autowired
     private ItemService itemService;
     @MockBean
