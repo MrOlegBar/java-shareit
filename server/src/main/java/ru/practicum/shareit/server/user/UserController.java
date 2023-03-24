@@ -23,7 +23,7 @@ public class UserController {
     @PatchMapping("/users/{userId}")
     public UserDto patchUser(@PathVariable Long userId,
                              @RequestBody UserDto userDto) throws UserNotFoundException {
-        User user = userService.getUserById(userId);
+        User user = userService.getUserByIdOrElseThrow(userId);
 
         if (userDto.getName() != null) {
             user.setName(userDto.getName());
@@ -43,14 +43,14 @@ public class UserController {
                     .map(UserMapper::toUserDto)
                     .collect(Collectors.toList());
         } else {
-            User userForDto = userService.getUserById(userId);
+            User userForDto = userService.getUserByIdOrElseThrow(userId);
             return UserMapper.toUserDto(userForDto);
         }
     }
 
     @DeleteMapping("/users/{userId}")
     public Boolean deleteUser(@PathVariable Long userId) throws UserNotFoundException {
-        userService.getUserById(userId);
+        userService.getUserByIdOrElseThrow(userId);
 
         return userService.deleteUser(userId);
     }

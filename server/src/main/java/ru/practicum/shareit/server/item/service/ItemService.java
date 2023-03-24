@@ -10,7 +10,7 @@ import java.util.List;
 public interface ItemService {
     Item create(Item item);
 
-    Item getItemById(long itemId);
+    Item getItemByIdOrElseThrow(long itemId);
 
     ItemDto getItemDtoByOwnerIdAndItemId(long userId, long itemId) throws ItemNotFoundException;
 

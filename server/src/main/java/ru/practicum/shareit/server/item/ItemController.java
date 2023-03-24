@@ -35,19 +35,19 @@ public class ItemController {
     private final ItemService itemService;
     private final BookingService bookingService;
     private final RequestService requestService;
-    public static final String DEFAULT_FROM_VALUE = "0";
-    public static final String DEFAULT_SIZE_VALUE = "20";
-    public static final String USER_ID_HEADER = "X-Sharer-User-Id";
+    private static final String DEFAULT_FROM_VALUE = "0";
+    private static final String DEFAULT_SIZE_VALUE = "10";
+    private static final String USER_ID_HEADER = "X-Sharer-User-Id";
 
     @PostMapping("/items")
     public LessShortItemDto postItem(@RequestHeader(USER_ID_HEADER) Long userId,
                                      @Validated(Post.class)
                                      @RequestBody LessShortItemDto lessShortItemDto) throws UserNotFoundException {
-        User user = userService.getUserById(userId);
+        User user = userService.getUserByIdOrElseThrow(userId);
         Item itemFromDto = ItemMapper.toItem(lessShortItemDto);
 
         if (lessShortItemDto.getRequestId() != null) {
-            Request request = requestService.getRequestById(lessShortItemDto.getRequestId());
+            Request request = requestService.getRequestByIdOrElseThrow(lessShortItemDto.getRequestId());
             itemFromDto.setRequest(request);
         }
 
@@ -61,8 +61,8 @@ public class ItemController {
     public LessShortItemDto patchItem(@RequestHeader(USER_ID_HEADER) Long userId,
                                       @RequestBody LessShortItemDto lessShortItemDto,
                                       @PathVariable Long itemId) throws UserNotFoundException, ItemNotFoundException {
-        User user = userService.getUserById(userId);
-        Item item = itemService.getItemById(itemId);
+        User user = userService.getUserByIdOrElseThrow(userId);
+        Item item = itemService.getItemByIdOrElseThrow(itemId);
 
         if (lessShortItemDto.getName() != null) {
             item.setName(lessShortItemDto.getName());
@@ -74,7 +74,7 @@ public class ItemController {
             item.setAvailable(lessShortItemDto.getAvailable());
         }
         if (lessShortItemDto.getRequestId() != null) {
-            Request request = requestService.getRequestById(lessShortItemDto.getRequestId());
+            Request request = requestService.getRequestByIdOrElseThrow(lessShortItemDto.getRequestId());
             item.setRequest(request);
         }
 
@@ -90,6 +90,8 @@ public class ItemController {
                             @RequestParam(required = false, defaultValue = DEFAULT_SIZE_VALUE) Integer size,
                             @PathVariable(required = false) Long itemId)
             throws UserNotFoundException, ItemNotFoundException {
+
+        userService.getUserByIdOrElseThrow(userId);
 
         if (itemId == null) {
             return itemService.getAllItemsDtoByOwnerId(userId, from, size);
@@ -117,8 +119,8 @@ public class ItemController {
                                   @RequestBody CommentDto commentDto,
                                   @PathVariable Long itemId) throws UserNotFoundException {
 
-        User user = userService.getUserById(userId);
-        Item item = itemService.getItemById(itemId);
+        User user = userService.getUserByIdOrElseThrow(userId);
+        Item item = itemService.getItemByIdOrElseThrow(itemId);
 
         if (bookingService.getAllBookingsByBookerId(userId).stream()
                 .noneMatch(booking -> Objects.equals(booking.getItem().getId(), itemId) && booking.getBooker().getId()

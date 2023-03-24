@@ -2,6 +2,7 @@ package ru.practicum.shareit.server.item.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import ru.practicum.shareit.server.user.User;
 
 import javax.persistence.*;
@@ -23,7 +24,8 @@ public class Comment {
     @ManyToOne
     @JoinColumn(name = "comment_author_id")
     private User author;
-    @Column(name = "comment_created", nullable = false, updatable = false)
+    @Column(name = "comment_created", columnDefinition = "timestamp default now()")
+    @CreationTimestamp
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd@HH:mm:ss")
     private LocalDateTime created;
     @ManyToOne

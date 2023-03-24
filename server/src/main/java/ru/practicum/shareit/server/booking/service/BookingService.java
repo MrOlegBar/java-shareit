@@ -15,7 +15,7 @@ public interface BookingService {
 
     List<Booking> getAllBookingsByOwnerId(long ownerId, BookingState state, int from, int size);
 
-    Booking getBookingById(long bookingId) throws BookingNotFoundException;
+    Booking getBookingByIdOrElseThrow(long bookingId) throws BookingNotFoundException;
 
     Booking update(Booking booking);
 }

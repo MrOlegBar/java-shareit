@@ -25,34 +25,31 @@ public class BookingClient extends BaseClient {
         );
     }
 
-    public ResponseEntity<Object> bookItem(long userId, BookingDtoForRequest bookingDtoForRequest) {
+    public ResponseEntity<Object> postBooking(Long userId, BookingDtoForRequest bookingDtoForRequest) {
         return post("", userId, bookingDtoForRequest);
     }
 
-    public ResponseEntity<Object> getBookings(long userId, BookingState state) {
-        Map<String, Object> parameters = Map.of(
-                "state", state.name()
-        );
-        return get("?state={state}&from={from}&size={size}", userId, parameters);
-    }
-
-    public ResponseEntity<Object> getBookings(long userId) {
-        return get("", userId);
-    }
-
-
-    public ResponseEntity<Object> getBooking(long userId, Long bookingId) {
-        return get("/" + bookingId, userId);
-    }
-
-    public ResponseEntity<Object> patchBooking(long bookingId, Boolean approved, long userId) {
+    public ResponseEntity<Object> patchBooking(Long bookingId, Boolean approved, Long userId) {
         Map<String, Object> parameters = Map.of(
                 "approved", approved
         );
         return patch("/" + bookingId + "?approved=" + approved, userId, parameters);
     }
 
-    public ResponseEntity<Object> findAllByItemOwner(BookingState state, Long userId, int from, int size) {
+    public ResponseEntity<Object> getBookings(Long userId, BookingState state, Integer from, Integer size) {
+        Map<String, Object> parameters = Map.of(
+                "state", state.name(),
+                "from", from,
+                "size", size
+        );
+        return get("?state={state}&from={from}&size={size}", userId, parameters);
+    }
+
+    public ResponseEntity<Object> getBooking(Long userId, Long bookingId) {
+        return get("/" + bookingId, userId);
+    }
+
+    public ResponseEntity<Object> getBookingsOwner(BookingState state, Long userId, Integer from, Integer size) {
         Map<String, Object> parameters = Map.of(
                 "state", state,
                 "from", from,

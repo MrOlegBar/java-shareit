@@ -2,7 +2,6 @@ package ru.practicum.shareit.server.booking;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.server.booking.dto.BookingMapper;
 import ru.practicum.shareit.server.booking.dto.BookingDtoForRequest;
@@ -13,8 +12,6 @@ import ru.practicum.shareit.server.booking.model.Booking;
 import ru.practicum.shareit.server.booking.model.BookingState;
 import ru.practicum.shareit.server.booking.model.BookingStatus;
 import ru.practicum.shareit.server.booking.service.BookingService;
-import ru.practicum.shareit.server.constraintGroup.Post;
-import ru.practicum.shareit.server.error.MethodParametersException;
 import ru.practicum.shareit.server.item.model.Item;
 import ru.practicum.shareit.server.item.service.ItemService;
 import ru.practicum.shareit.server.user.User;
@@ -33,14 +30,18 @@ public class BookingController {
     private final UserServiceImpl userService;
     private final BookingService bookingService;
     private final ItemService itemService;
+    private static final String DEFAULT_FROM_VALUE = "0";
+    private static final String DEFAULT_SIZE_VALUE = "10";
+    private static final String DEFAULT_STATE_VALUE = "ALL";
+    private static final String USER_ID_HEADER = "X-Sharer-User-Id";
 
     @PostMapping("/bookings")
-    public BookingDto postBooking(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                  @Validated(Post.class) @RequestBody BookingDtoForRequest bookingDtoForRequest)
+    public BookingDto postBooking(@RequestHeader(USER_ID_HEADER) Long userId,
+                                  @RequestBody BookingDtoForRequest bookingDtoForRequest)
             throws UserNotFoundException, BookingBadRequestException {
 
         Booking bookingFromDto = BookingMapper.toBooking(bookingDtoForRequest);
-        Item item = itemService.getItemById(bookingDtoForRequest.getItemId());
+        Item item = itemService.getItemByIdOrElseThrow(bookingDtoForRequest.getItemId());
         bookingFromDto.setItem(item);
 
         if (userId.equals(bookingFromDto.getItem().getOwner().getId())) {
@@ -59,7 +60,7 @@ public class BookingController {
             throw new BookingBadRequestException("Дата начала бронирования должна быть раньше " +
                     "даты окончания бронирования.");
         }
-        User booker = userService.getUserById(userId);
+        User booker = userService.getUserByIdOrElseThrow(userId);
 
         bookingFromDto.setBooker(booker);
         bookingFromDto.setStatus(BookingStatus.WAITING);
@@ -70,11 +71,13 @@ public class BookingController {
 
     @PatchMapping("/bookings/{bookingId}")
     @Transactional
-    public BookingDto patchBooking(@RequestHeader("X-Sharer-User-Id") Long userId,
+    public BookingDto patchBooking(@RequestHeader(USER_ID_HEADER) Long userId,
                                    @PathVariable Long bookingId,
-                                   @RequestParam Boolean approved) {
-        userService.getUserById(userId);
-        Booking booking = bookingService.getBookingById(bookingId);
+                                   @RequestParam Boolean approved) throws BookingNotFoundException {
+
+        userService.getUserByIdOrElseThrow(userId);
+
+        Booking booking = bookingService.getBookingByIdOrElseThrow(bookingId);
 
         if (!userId.equals(booking.getItem().getOwner().getId())) {
             log.debug("Подтверждение бронирования доступно только владельцу вещи.");
@@ -95,55 +98,46 @@ public class BookingController {
         return BookingMapper.toBookingDto(bookingForDto);
     }
 
-    @GetMapping("/bookings/{bookingId}")
-    public BookingDto getBookingsById(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                      @PathVariable Long bookingId) throws UserNotFoundException,
-            BookingNotFoundException {
-
-        userService.getUserById(userId);
-        Booking bookingForDto = bookingService.getBookingById(bookingId);
-
-        if ((userId.equals(bookingForDto.getBooker().getId())) ||
-                (userId.equals(bookingForDto.getItem().getOwner().getId()))) {
-            return BookingMapper.toBookingDto(bookingForDto);
-        } else {
-            log.debug("Получение данных о бронировании доступно автору бронирования или владельцу вещи.");
-            throw new BookingNotFoundException("Получение данных о бронировании доступно автору бронирования или " +
-                    "владельцу вещи.");
-        }
-    }
-
-    @GetMapping("/bookings")
-    public List<BookingDto> getBookings(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                        @RequestParam(required = false, defaultValue = "ALL") BookingState state,
-                                        @RequestParam(required = false, defaultValue = "0") Integer from,
-                                        @RequestParam(required = false, defaultValue = "10") Integer size)
+    @GetMapping({"/bookings", "/bookings/{bookingId}"})
+    public Object getBookingS(@RequestHeader(USER_ID_HEADER) Long userId,
+                              @RequestParam(required = false, defaultValue = DEFAULT_STATE_VALUE)
+                              BookingState state,
+                              @RequestParam(required = false, defaultValue = DEFAULT_FROM_VALUE) Integer from,
+                              @RequestParam(required = false, defaultValue = DEFAULT_SIZE_VALUE) Integer size,
+                              @PathVariable(required = false) Long bookingId)
             throws UserNotFoundException, BookingNotFoundException {
 
-        userService.getUserById(userId);
-        if (from < 0 || size <= 0) {
-            log.debug("Параметры запроса заданы не верно.");
-            throw new MethodParametersException("Параметры запроса заданы не верно.");
-        }
+        userService.getUserByIdOrElseThrow(userId);
 
-        return bookingService.getAllBookingsByBookerId(userId, state, from, size).stream()
-                .map(BookingMapper::toBookingDto)
-                .collect(Collectors.toList());
+        if (bookingId == null) {
+            return bookingService.getAllBookingsByBookerId(userId, state, from, size).stream()
+                    .map(BookingMapper::toBookingDto)
+                    .collect(Collectors.toList());
+        } else {
+            Booking bookingForDto = bookingService.getBookingByIdOrElseThrow(bookingId);
+
+            if ((userId.equals(bookingForDto.getBooker().getId())) ||
+                    (userId.equals(bookingForDto.getItem().getOwner().getId()))) {
+                return BookingMapper.toBookingDto(bookingForDto);
+            } else {
+                log.debug("Получение данных о бронировании доступно автору бронирования или владельцу вещи.");
+                throw new BookingNotFoundException("Получение данных о бронировании доступно автору бронирования или " +
+                        "владельцу вещи.");
+            }
+        }
     }
 
     @GetMapping("/bookings/owner")
-    public List<BookingDto> getBookingsOwner(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                             @RequestParam(required = false,
-                                                     defaultValue = "ALL") BookingState state,
-                                             @RequestParam(required = false, defaultValue = "0") Integer from,
-                                             @RequestParam(required = false, defaultValue = "10") Integer size)
+    public List<BookingDto> getBookingsOwner(@RequestHeader(USER_ID_HEADER) Long userId,
+                                             @RequestParam(required = false, defaultValue = DEFAULT_STATE_VALUE)
+                                             BookingState state,
+                                             @RequestParam(required = false, defaultValue = DEFAULT_FROM_VALUE)
+                                             Integer from,
+                                             @RequestParam(required = false, defaultValue = DEFAULT_SIZE_VALUE)
+                                             Integer size)
             throws UserNotFoundException, BookingNotFoundException {
 
-        userService.getUserById(userId);
-        if (from < 0 || size <= 0) {
-            log.debug("Параметры запроса заданы не верно.");
-            throw new MethodParametersException("Параметры запроса заданы не верно.");
-        }
+        userService.getUserByIdOrElseThrow(userId);
 
         return bookingService.getAllBookingsByOwnerId(userId, state, from, size).stream()
                 .map(BookingMapper::toBookingDto)

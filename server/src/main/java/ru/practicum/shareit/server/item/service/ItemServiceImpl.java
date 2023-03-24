@@ -17,6 +17,7 @@ import ru.practicum.shareit.server.item.dto.ItemDto;
 
 import java.time.LocalDateTime;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,7 +40,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Item getItemById(long itemId) throws ItemNotFoundException {
+    public Item getItemByIdOrElseThrow(long itemId) throws ItemNotFoundException {
         return itemRepository.findById(itemId).orElseThrow(() -> {
             log.debug("Вещь с itemId  = {} не найдена.", itemId);
             throw new ItemNotFoundException(String.format("Вещь с itemId = %s не найдена.",
@@ -58,7 +59,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto getItemDtoByOwnerIdAndItemId(long userId, long itemId) throws ItemNotFoundException {
-        ItemDto itemDto = ItemMapper.toItemDto(getItemById(itemId));
+        ItemDto itemDto = ItemMapper.toItemDto(getItemByIdOrElseThrow(itemId));
 
         if (itemRepository.findItemByOwner_IdAndId(userId, itemId).isPresent()) {
             setBookingsToItemDto(itemDto);
@@ -73,6 +74,7 @@ public class ItemServiceImpl implements ItemService {
         return items.stream()
                 .map(ItemMapper::toItemDto)
                 .peek(this::setBookingsToItemDto)
+                .sorted(Comparator.comparing(ItemDto::getId))
                 .collect(Collectors.toList());
     }
 
@@ -89,22 +91,20 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private void setBookingsToItemDto(ItemDto itemDto) {
-        LocalDateTime dateTimeNow = LocalDateTime.now();
-
         if (bookingRepository.findFirstByItem_IdAndStatusAndStartDateIsBeforeOrderByEndDateDesc(itemDto.getId(),
-                BookingStatus.APPROVED, dateTimeNow).isPresent()) {
+                BookingStatus.APPROVED, LocalDateTime.now()).isPresent()) {
 
             itemDto.setLastBooking(BookingMapper.toShortBookingDto(bookingRepository
                     .findFirstByItem_IdAndStatusAndStartDateIsBeforeOrderByEndDateDesc(itemDto.getId(),
-                            BookingStatus.APPROVED, dateTimeNow).get()));
+                            BookingStatus.APPROVED, LocalDateTime.now()).get()));
 
         }
         if (bookingRepository.findFirstByItem_IdAndStatusAndStartDateIsAfterOrderByStartDateAsc(itemDto.getId(),
-                BookingStatus.APPROVED, dateTimeNow).isPresent()) {
+                BookingStatus.APPROVED, LocalDateTime.now()).isPresent()) {
 
             itemDto.setNextBooking(BookingMapper.toShortBookingDto(bookingRepository
                     .findFirstByItem_IdAndStatusAndStartDateIsAfterOrderByStartDateAsc(itemDto.getId(),
-                            BookingStatus.APPROVED, dateTimeNow).get()));
+                            BookingStatus.APPROVED, LocalDateTime.now()).get()));
 
         }
     }

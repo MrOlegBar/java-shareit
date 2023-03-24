@@ -20,9 +20,9 @@ import javax.validation.constraints.PositiveOrZero;
 @Slf4j
 public class ItemController {
 
-    public static final String DEFAULT_FROM_VALUE = "0";
-    public static final String DEFAULT_SIZE_VALUE = "20";
-    public static final String USER_ID_HEADER = "X-Sharer-User-Id";
+    private static final String DEFAULT_FROM_VALUE = "0";
+    private static final String DEFAULT_SIZE_VALUE = "10";
+    private static final String USER_ID_HEADER = "X-Sharer-User-Id";
 
     private final ItemClient itemClient;
     private final UserClient userClient;
@@ -50,7 +50,6 @@ public class ItemController {
                                             @PathVariable(required = false) Long itemId)
             throws UserNotFoundException, ItemNotFoundException {
 
-        userClient.getUser(userId);
         /*if (from < 0 || size <= 0) {
             log.debug("Параметры запроса заданы не верно.");
             throw new MethodParametersException("Параметры запроса заданы не верно.");

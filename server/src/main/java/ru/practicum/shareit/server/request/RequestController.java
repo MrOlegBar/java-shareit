@@ -29,7 +29,7 @@ public class RequestController {
     public RequestDto postRequest(@RequestHeader("X-Sharer-User-Id") Long userId,
                                   @Validated(Post.class)
                                   @RequestBody RequestDtoForRequest requestDtoForRequest) throws UserNotFoundException {
-        User user = userService.getUserById(userId);
+        User user = userService.getUserByIdOrElseThrow(userId);
 
         Request requestFromDto = RequestMapper.toRequest(requestDtoForRequest);
         requestFromDto.setRequester(user);
@@ -41,16 +41,16 @@ public class RequestController {
     public RequestDto getRequestById(@RequestHeader("X-Sharer-User-Id") Long userId,
                                      @PathVariable Long requestId) throws UserNotFoundException,
             RequestNotFoundException {
-        userService.getUserById(userId);
+        userService.getUserByIdOrElseThrow(userId);
 
-        Request requestForDto = requestService.getRequestById(requestId);
+        Request requestForDto = requestService.getRequestByIdOrElseThrow(requestId);
         return RequestMapper.toRequestDto(requestForDto);
     }
 
     @GetMapping("/requests")
     public Collection<RequestDto> getRequests(@RequestHeader("X-Sharer-User-Id") Long userId)
             throws UserNotFoundException {
-        userService.getUserById(userId);
+        userService.getUserByIdOrElseThrow(userId);
 
         return requestService.getAllRequestsByUserId(userId)
                 .stream()
@@ -64,7 +64,7 @@ public class RequestController {
                                                @RequestParam(required = false, defaultValue = "1") Integer size)
             throws UserNotFoundException {
 
-        userService.getUserById(userId);
+        userService.getUserByIdOrElseThrow(userId);
         if (from < 0 || size <= 0) {
             log.debug("Параметры запроса заданы не верно.");
             throw new MethodParametersException("Параметры запроса заданы не верно.");

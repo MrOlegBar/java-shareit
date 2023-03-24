@@ -12,5 +12,5 @@ public interface RequestService {
 
     List<Request> getAllItemRequests(long userId, int from, int size);
 
-    Request getRequestById(long requestId);
+    Request getRequestByIdOrElseThrow(long requestId);
 }

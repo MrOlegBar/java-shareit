@@ -28,7 +28,7 @@ public class UserController {
         if (userId == null) {
             return userClient.getUsers();
         } else {
-            return userClient.getUser(userId);
+            return userClient.getUserOrElseThrow(userId);
         }
     }
 

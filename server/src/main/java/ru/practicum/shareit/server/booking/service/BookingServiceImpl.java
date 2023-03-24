@@ -34,7 +34,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Booking getBookingById(long bookingId) throws BookingNotFoundException {
+    public Booking getBookingByIdOrElseThrow(long bookingId) throws BookingNotFoundException {
         return bookingRepository.findById(bookingId).orElseThrow(() -> {
             log.debug("Бронирование с bookingId  = {} не найдено.", bookingId);
             throw new BookingNotFoundException(String.format("Бронирование с bookingId = %s не найдено.",

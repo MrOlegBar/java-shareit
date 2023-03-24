@@ -22,8 +22,8 @@ public class Request {
     private Long id;
     @Column(name = "request_description")
     private String description;
-    @Column(name = "request_created", nullable = false, updatable = false)
-    private LocalDateTime created = LocalDateTime.now();
+    @Column(name = "request_created")
+    private LocalDateTime created;
     @ManyToOne
     @JoinColumn(name = "request_requester_id")
     private User requester;

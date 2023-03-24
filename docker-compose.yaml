@@ -31,6 +31,7 @@ services:
     ports:
       - "6541:5432"
     environment:
+      - TZ=Europe/Moscow
       - POSTGRES_DB=shareit
       - POSTGRES_USER=developer
       - POSTGRES_PASSWORD=developer

@@ -24,7 +24,7 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public Request getRequestById(long requestId) {
+    public Request getRequestByIdOrElseThrow(long requestId) {
         return requestRepository.findById(requestId).orElseThrow(() -> {
             log.debug("Запрос с requestId  = {} не найден.", requestId);
             throw new RequestNotFoundException(String.format("Запрос с requestId = %s не найден.",

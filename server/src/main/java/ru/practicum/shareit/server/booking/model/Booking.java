@@ -23,7 +23,7 @@ public class Booking {
     private LocalDateTime startDate;
     @Column(name = "booking_end_date")
     private LocalDateTime endDate;
-    @Column(name = "booking_status", nullable = false)
+    @Column(name = "booking_status")
     @Enumerated(EnumType.STRING)
     private BookingStatus status;
     @ManyToOne
