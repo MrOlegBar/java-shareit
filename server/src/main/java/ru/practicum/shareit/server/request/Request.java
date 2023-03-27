@@ -1,6 +1,7 @@
 package ru.practicum.shareit.server.request;
 
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import ru.practicum.shareit.server.item.model.Item;
 import ru.practicum.shareit.server.user.User;
 
@@ -22,26 +23,14 @@ public class Request {
     private Long id;
     @Column(name = "request_description")
     private String description;
+    @CreationTimestamp()
     @Column(name = "request_created")
-    private LocalDateTime created;
+    private LocalDateTime created = LocalDateTime.now();
     @ManyToOne
     @JoinColumn(name = "request_requester_id")
     private User requester;
     @OneToMany(mappedBy = "request")
     private Set<Item> items = new HashSet<>();
-
-    public Request(Long id, String description, User requester, Set<Item> items) {
-        this.id = id;
-        this.description = description;
-        this.requester = requester;
-        this.items = items;
-    }
-
-    public Request(String description, User requester, Set<Item> items) {
-        this.description = description;
-        this.requester = requester;
-        this.items = items;
-    }
 
     @Override
     public boolean equals(Object o) {

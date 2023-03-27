@@ -8,17 +8,13 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.gateway.booking.exception.BookingBadRequestException;
 import ru.practicum.shareit.gateway.booking.exception.BookingNotFoundException;
 import ru.practicum.shareit.gateway.constraintGroup.Post;
-import ru.practicum.shareit.gateway.user.UserClient;
+import ru.practicum.shareit.gateway.error.MethodParametersException;
 import ru.practicum.shareit.gateway.user.UserNotFoundException;
-
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
 
 @RestController
 @RequiredArgsConstructor
 @Slf4j
 public class BookingController {
-    private final UserClient userClient;
     private final BookingClient bookingClient;
     private static final String DEFAULT_FROM_VALUE = "0";
     private static final String DEFAULT_SIZE_VALUE = "10";
@@ -47,16 +43,13 @@ public class BookingController {
                                               @RequestParam(required = false, defaultValue = DEFAULT_STATE_VALUE)
                                               BookingState state,
                                               @RequestParam(required = false, defaultValue = DEFAULT_FROM_VALUE)
-                                              @PositiveOrZero Integer from,
+                                              Integer from,
                                               @RequestParam(required = false, defaultValue = DEFAULT_SIZE_VALUE)
-                                              @Positive Integer size,
+                                              Integer size,
                                               @PathVariable(required = false) Long bookingId)
             throws UserNotFoundException, BookingNotFoundException {
 
-        /*if (from < 0 || size <= 0) {
-            log.debug("Параметры запроса заданы не верно.");
-            throw new MethodParametersException("Параметры запроса заданы не верно.");
-        }*/
+        methodParametersValidation(from, size);
 
         if (bookingId == null) {
             return bookingClient.getBookings(userId, state, from, size);
@@ -70,16 +63,20 @@ public class BookingController {
                                                    @RequestParam(required = false,
                                                            defaultValue = DEFAULT_STATE_VALUE) BookingState state,
                                                    @RequestParam(required = false, defaultValue = DEFAULT_FROM_VALUE)
-                                                   @PositiveOrZero Integer from,
+                                                   Integer from,
                                                    @RequestParam(required = false, defaultValue = DEFAULT_SIZE_VALUE)
-                                                   @Positive Integer size)
+                                                   Integer size)
             throws UserNotFoundException, BookingNotFoundException {
 
-        /*if (from < 0 || size <= 0) {
-            log.debug("Параметры запроса заданы не верно.");
-            throw new MethodParametersException("Параметры запроса заданы не верно.");
-        }*/
+        methodParametersValidation(from, size);
 
         return bookingClient.getBookingsOwner(state, userId, from, size);
+    }
+
+    private void methodParametersValidation(Integer from, Integer size) {
+        if (from < 0 || size <= 0) {
+            log.debug("Параметры запроса заданы не верно.");
+            throw new MethodParametersException("Параметры запроса заданы не верно.");
+        }
     }
 }

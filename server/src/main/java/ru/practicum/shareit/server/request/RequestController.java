@@ -2,10 +2,7 @@ package ru.practicum.shareit.server.request;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.server.constraintGroup.Post;
-import ru.practicum.shareit.server.error.MethodParametersException;
 import ru.practicum.shareit.server.request.dto.RequestDto;
 import ru.practicum.shareit.server.request.dto.RequestMapper;
 import ru.practicum.shareit.server.request.dto.RequestDtoForRequest;
@@ -14,7 +11,6 @@ import ru.practicum.shareit.server.user.User;
 import ru.practicum.shareit.server.user.UserNotFoundException;
 import ru.practicum.shareit.server.user.service.UserServiceImpl;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,10 +20,12 @@ import java.util.stream.Collectors;
 public class RequestController {
     private final RequestService requestService;
     private final UserServiceImpl userService;
+    private static final String DEFAULT_FROM_VALUE = "0";
+    private static final String DEFAULT_SIZE_VALUE = "10";
+    private static final String USER_ID_HEADER = "X-Sharer-User-Id";
 
     @PostMapping("/requests")
-    public RequestDto postRequest(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                  @Validated(Post.class)
+    public RequestDto postRequest(@RequestHeader(USER_ID_HEADER) Long userId,
                                   @RequestBody RequestDtoForRequest requestDtoForRequest) throws UserNotFoundException {
         User user = userService.getUserByIdOrElseThrow(userId);
 
@@ -37,38 +35,32 @@ public class RequestController {
         return RequestMapper.toRequestDto(requestForDto);
     }
 
-    @GetMapping("/requests/{requestId}")
-    public RequestDto getRequestById(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                     @PathVariable Long requestId) throws UserNotFoundException,
+    @GetMapping({"/requests", "/requests/{requestId}"})
+    public Object getRequestS(@RequestHeader(USER_ID_HEADER) Long userId,
+                              @PathVariable(required = false) Long requestId) throws UserNotFoundException,
             RequestNotFoundException {
         userService.getUserByIdOrElseThrow(userId);
 
-        Request requestForDto = requestService.getRequestByIdOrElseThrow(requestId);
-        return RequestMapper.toRequestDto(requestForDto);
-    }
-
-    @GetMapping("/requests")
-    public Collection<RequestDto> getRequests(@RequestHeader("X-Sharer-User-Id") Long userId)
-            throws UserNotFoundException {
-        userService.getUserByIdOrElseThrow(userId);
-
-        return requestService.getAllRequestsByUserId(userId)
-                .stream()
-                .map(RequestMapper::toRequestDto)
-                .collect(Collectors.toList());
-    }
-
-    @GetMapping(value = {"/requests/all"})
-    public List<RequestDto> getAllItemRequests(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                               @RequestParam(required = false, defaultValue = "0") Integer from,
-                                               @RequestParam(required = false, defaultValue = "1") Integer size)
-            throws UserNotFoundException {
-
-        userService.getUserByIdOrElseThrow(userId);
-        if (from < 0 || size <= 0) {
-            log.debug("Параметры запроса заданы не верно.");
-            throw new MethodParametersException("Параметры запроса заданы не верно.");
+        if (requestId == null) {
+            return requestService.getAllRequestsByUserId(userId)
+                    .stream()
+                    .map(RequestMapper::toRequestDto)
+                    .collect(Collectors.toList());
+        } else {
+            Request requestForDto = requestService.getRequestByIdOrElseThrow(requestId);
+            return RequestMapper.toRequestDto(requestForDto);
         }
+    }
+
+    @GetMapping("/requests/all")
+    public List<RequestDto> getAllItemRequests(@RequestHeader(USER_ID_HEADER) Long userId,
+                                               @RequestParam(required = false, defaultValue = DEFAULT_FROM_VALUE)
+                                               Integer from,
+                                               @RequestParam(required = false, defaultValue = DEFAULT_SIZE_VALUE)
+                                               Integer size)
+            throws UserNotFoundException {
+
+        userService.getUserByIdOrElseThrow(userId);
 
         return requestService.getAllItemRequests(userId, from, size).stream()
                 .map(RequestMapper::toRequestDto)
