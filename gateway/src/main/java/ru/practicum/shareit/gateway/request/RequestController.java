@@ -47,8 +47,8 @@ public class RequestController {
             throws UserNotFoundException {
 
         if (from < 0 || size <= 0) {
-            log.debug("Параметры запроса заданы не верно.");
-            throw new MethodParametersException("Параметры запроса заданы не верно.");
+            log.debug("Параметры запроса from & size заданы не верно.");
+            throw new MethodParametersException("Параметры запроса from & size заданы не верно.");
         }
 
         return requestClient.getAllItemRequests(from, size, userId);
